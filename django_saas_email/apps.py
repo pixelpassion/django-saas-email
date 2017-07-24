@@ -3,4 +3,5 @@ from django.apps import AppConfig
 
 
 class DjangoSaasEmailConfig(AppConfig):
-    name = 'Emails'
+    name = 'django_saas_email'
+    verbose_name= 'Emails'
