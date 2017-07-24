@@ -13,6 +13,15 @@ Django Saas Email Manager
 
 An email manager for sending emails with templates, mail history and admin.
 
+Features
+--------
+
+* Use of [Mailhog](#) for local email testing
+* Send emails via [Anymail](#) (using [Sendgrid](#) as default)
+* Serving dynamic HTML E-Mail Templates, editable with [Tinymce](#)
+* Use of the [Transactional email templates](https://github.com/mailgun/transactional-email-templates) from [Mailgun](https://www.mailgun.com).
+
+
 Documentation
 -------------
 
@@ -44,12 +53,20 @@ If you are using a different database, you also need to install `jsonfield`::
     pip install jsonfield
 
 
-Features
---------
+Sending emails::
 
-* Dynamic use of templates in the database
-* Writes all sent mails into a database
-* Works together with Sendgrid and other mail providers thanks to django-anymail
+    from django_saas_email.utils import create_and_send_emails
+
+    context={
+        'first_name': 'John',
+        'last_name': 'Doe',
+    }
+
+    create_and_send_mail(
+        template_name="hello_world",
+        context=context,
+        to_address=john.doe@example.org
+    )
 
 
 

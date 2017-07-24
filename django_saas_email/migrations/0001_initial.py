@@ -5,7 +5,12 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
-import jsonfield.fields
+
+try:
+    from django.contrib.postgres.fields import JSONField
+except:
+    from jsonfield import JSONField
+
 import tinymce.models
 import uuid
 
@@ -27,7 +32,7 @@ class Migration(migrations.Migration):
                 ('delivery_mail_id', models.IntegerField(blank=True, editable=False, help_text='The ID is saved after correct sending', null=True, verbose_name='Unique mail sender ID')),
                 ('delivery_status', models.IntegerField(blank=True, editable=False, help_text='The Mail sender status', null=True, verbose_name='Status of Mail sender')),
                 ('subject', models.CharField(blank=True, help_text='Subject line for a mail', max_length=500, null=True, verbose_name='Email Subject line')),
-                ('context', jsonfield.fields.JSONField(help_text='JSON dump of context dictionary used to fill in templates', verbose_name='Data of email context')),
+                ('context', JSONField(help_text='JSON dump of context dictionary used to fill in templates', verbose_name='Data of email context')),
                 ('time_created', models.DateTimeField(default=django.utils.timezone.now, editable=False, help_text='When was the mail created?', verbose_name='Creation time')),
                 ('time_sent', models.DateTimeField(blank=True, editable=False, help_text='When was the mail send via the backend?', null=True, verbose_name='Sent time')),
                 ('time_delivered', models.DateTimeField(blank=True, editable=False, help_text='Actual delivery time by the email backend', null=True, verbose_name='Delivery time')),
