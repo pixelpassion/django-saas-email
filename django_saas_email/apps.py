@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 
 class DjangoSaasEmailConfig(AppConfig):
-    name = 'django_saas_email'
+    name = 'Emails'

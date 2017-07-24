@@ -1,16 +1,39 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 from .models import Mail, MailTemplate
 from .tasks import send_asynchronous_mail
+from .utils import create_and_send_mail
+from django.core.exceptions import ImproperlyConfigured
 
 
 @admin.register(MailTemplate)
 class MailTemplateAdmin(admin.ModelAdmin):
+
+    def test_mail_template(self, request, queryset):
+
+        mails_sent = 0
+
+        if not settings.DJANGO_SAAS_TEST_EMAIL_ADDRESS:
+            raise ImproperlyConfigured("You need to add DJANGO_SAAS_TEST_EMAIL_ADDRESS=youremailaddress@example.com to test emails.")
+
+        for object in queryset:
+            create_and_send_mail(template=object.name, context={}, to_address=settings.DJANGO_SAAS_TEST_EMAIL_ADDRESS)
+            mails_sent += 1
+
+        if mails_sent == 1:
+            message_bit = _("1 Mail template was")
+        else:
+            message_bit = _("%s Mail templates were") % mails_sent
+        self.message_user(request, "%s tested" % message_bit)
+
+    test_mail_template.short_description = "Send test mail now"
+
     list_display = ('name', 'subject')
     search_fields = []
     ordering = ('name',)
-    actions = []
+    actions = [test_mail_template, ]
 
 
 @admin.register(Mail)

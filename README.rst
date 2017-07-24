@@ -16,10 +16,10 @@ An email manager for sending emails with templates, mail history and admin.
 Features
 --------
 
-* Use of [Mailhog](#) for local email testing
-* Send emails via [Anymail](#) (using [Sendgrid](#) as default)
-* Serving dynamic HTML E-Mail Templates, editable with [Tinymce](#)
-* Use of the [Transactional email templates](https://github.com/mailgun/transactional-email-templates) from [Mailgun](https://www.mailgun.com).
+* Use of [Mailhog](https://github.com/mailhog/MailHog) for local email testing
+* Send emails via [django-anymail](https://github.com/anymail/django-anymail) (using [Sendgrid](#) as default)
+* Serving dynamic HTML E-Mail Templates, editable with [Tinymce](https://github.com/aljosa/django-tinymce)
+* Use of the awesome [Transactional email templates](https://github.com/mailgun/transactional-email-templates) from [Mailgun](https://www.mailgun.com).
 
 
 Documentation
@@ -30,7 +30,7 @@ The full documentation is at https://django-saas-email.readthedocs.io.
 Quickstart
 ----------
 
-Install Django Saas Email Manager::
+## Install Django Saas Email Manager::
 
     pip install django-saas-email
 
@@ -46,6 +46,8 @@ Add it to your `INSTALLED_APPS`:
     )
 
 
+## JSONField
+
 We are using the Postgres JSONField as default. If you installed `psycopg2`, everything should work fine.
 
 If you are using a different database, you also need to install `jsonfield`::
@@ -53,7 +55,20 @@ If you are using a different database, you also need to install `jsonfield`::
     pip install jsonfield
 
 
-Sending emails::
+## Adding the Sendgrid API Key to your settings
+
+In settings.py::
+
+    SENDGRID_API_KEY=<....>
+
+Other optional settings::
+
+    DJANGO_SAAS_TEST_EMAIL_ADDRESS=youremailfortesting@example.org
+    DJANGO_SAAS_FOOTER="""Follow <a href="#" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">@yourcompany</a> on Twitter"""
+
+## Sending emails
+
+Basic example::
 
     from django_saas_email.utils import create_and_send_emails
 
@@ -68,26 +83,14 @@ Sending emails::
         to_address=john.doe@example.org
     )
 
-
+This will create an email and send it with Sengrid.
 
 Running Tests
 -------------
 
-Does the code actually work?
-
-::
+Does the code actually work?::
 
     source <YOURVIRTUALENV>/bin/activate
     (myenv) $ pip install tox
     (myenv) $ tox
 
-Credits
--------
-
-Tools used in rendering this package:
-
-*  Cookiecutter_
-*  `cookiecutter-djangopackage`_
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`cookiecutter-djangopackage`: https://github.com/pydanny/cookiecutter-djangopackage

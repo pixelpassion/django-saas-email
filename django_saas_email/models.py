@@ -272,8 +272,14 @@ class Mail(models.Model):
         else:
             rendered_subject = mail_template.make_subject(context)
 
+        if settings.DJANGO_SAAS_EMAIL_FOOTER:
+            footer = settings.DJANGO_SAAS_EMAIL_FOOTER
+        else:
+            footer = """Follow <a href="http://twitter.com/jensneuhaus" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">@jensneuhaus</a> on Twitter"""
+
         output_dict = mail_template.make_output(context)
         output_dict['subject'] = rendered_subject
+        output_dict['subject'] = footer
 
         return output_dict
 
