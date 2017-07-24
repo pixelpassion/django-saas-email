@@ -85,6 +85,9 @@ Basic example::
 
 This will create an email and send it with Sengrid.
 
+You should use http://premailer.dialect.ca or django-premailer to create Inline CSS in HTML
+
+
 Running Tests
 -------------
 
