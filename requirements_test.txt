@@ -1,0 +1,11 @@
+coverage==4.3.4
+mock>=1.0.1
+flake8>=2.1.0
+tox>=1.7.0
+codecov>=2.0.0
+html2text==2016.9.19
+sendgrid==4.1.0
+django-tinymce==2.6.0
+django-anymail==0.9
+
+# Additional test requirements go here
