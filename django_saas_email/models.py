@@ -105,7 +105,7 @@ class MailTemplate(models.Model):
         return h.handle(html_string)
 
 
-class MailManager(models.Model):
+class MailManager(models.Manager):
     def create_mail(self, template_name, context, to_address, from_address=None, subject=None):
         """Create a Mail object with proper validation.
 
