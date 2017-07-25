@@ -16,10 +16,10 @@ An email manager for sending emails with templates, mail history and admin.
 Features
 --------
 
-* Use of [Mailhog](https://github.com/mailhog/MailHog) for local email testing
-* Send emails via [django-anymail](https://github.com/anymail/django-anymail) (using [Sendgrid](#) as default)
-* Serving dynamic HTML E-Mail Templates, editable with [Tinymce](https://github.com/aljosa/django-tinymce)
-* Use of the awesome [Transactional email templates](https://github.com/mailgun/transactional-email-templates) from [Mailgun](https://www.mailgun.com).
+* Use of `Mailhog <https://github.com/mailhog/MailHog/>`_ for local email testing.
+* Send emails via `django-anymail <https://github.com/anymail/django-anymail>`_ (using `Sendgrid <https://sendgrid.com>`__ as default).
+* Serving dynamic HTML E-Mail Templates, editable with `Tinymce <https://github.com/aljosa/django-tinymce>`_.
+* Use of the awesome `Transactional email templates <https://github.com/mailgun/transactional-email-templates>`_ from `Mailgun <https://www.mailgun.com>`_.
 
 
 Documentation
@@ -30,7 +30,9 @@ The full documentation is at https://django-saas-email.readthedocs.io.
 Quickstart
 ----------
 
-## Install Django Saas Email Manager::
+**Installation**
+
+Installation with pip::
 
     pip install django-saas-email
 
@@ -46,7 +48,7 @@ Add it to your `INSTALLED_APPS`:
     )
 
 
-## JSONField
+**JSONField**
 
 We are using the Postgres JSONField as default. If you installed `psycopg2`, everything should work fine.
 
@@ -55,7 +57,7 @@ If you are using a different database, you also need to install `jsonfield`::
     pip install jsonfield
 
 
-## Adding the Sendgrid API Key to your settings
+**Adding the Sendgrid API Key to your settings**
 
 In settings.py::
 
@@ -66,7 +68,7 @@ Other optional settings::
     DJANGO_SAAS_TEST_EMAIL_ADDRESS=youremailfortesting@example.org
     DJANGO_SAAS_FOOTER="""Follow <a href="#" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">@yourcompany</a> on Twitter"""
 
-## Sending emails
+**Sending emails**
 
 Basic example::
 
