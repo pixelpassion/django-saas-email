@@ -80,7 +80,7 @@ class MailTemplate(models.Model):
             'EMAIL_CONTENT': email_content_html
         })
 
-        html_output = render_to_string("mails/email_base.html", html_context)
+        html_output = render_to_string("django_saas_email/email_base.html", html_context)
 
         if self.text_template:
             text_output = Template(self.text_template).render(context)
