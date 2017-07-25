@@ -19,7 +19,8 @@ class MailTemplateAdmin(admin.ModelAdmin):
             raise ImproperlyConfigured("You need to add DJANGO_SAAS_TEST_EMAIL_ADDRESS=youremailaddress@example.com to test emails.")
 
         for object in queryset:
-            create_and_send_mail(template=object.name, context={}, to_address=settings.DJANGO_SAAS_TEST_EMAIL_ADDRESS)
+            create_and_send_mail(template_name=object.name, context={}, to_address=settings.DJANGO_SAAS_TEST_EMAIL_ADDRESS)
+
             mails_sent += 1
 
         if mails_sent == 1:
