@@ -77,7 +77,9 @@ class MailTemplate(models.Model):
         email_content_html = Template(self.html_template).render(context)
 
         html_context = Context({
-            'EMAIL_CONTENT': email_content_html
+            'EMAIL_CONTENT': email_content_html,
+            'EMAIL_SUBJECT': context['EMAIL_SUBJECT'],
+            'EMAIL_FOOTER': context['EMAIL_FOOTER'],
         })
 
         html_output = render_to_string("django_saas_email/email_base.html", html_context)
