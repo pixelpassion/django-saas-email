@@ -45,7 +45,7 @@ def forwards_func(apps, schema_editor):
     """
 
     MailTemplate.objects.using(db_alias).bulk_create([
-        MailTemplate(name="hello", html_template=html_template),
+        MailTemplate(name="hello", html_template=html_template, subject="Hello {{first_name}} {{last_name}}!"),
     ])
 
 

@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import json
-import html2text
-import sendgrid
 import uuid
 
-from .logging import logger
-
+import html2text
+import sendgrid
+from django.conf import settings
 from tinymce import models as tinymce_models
 
-from django.conf import settings
+from .logging import logger
 
 try:
     from django.contrib.postgres.fields import JSONField
 except:
     from jsonfield import JSONField
-
 
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.mail import EmailMessage, EmailMultiAlternatives
@@ -31,52 +29,8 @@ try:
 except AttributeError:
     print("Please add SENDGRID_API_KEY to your settings.")
 
-class MailManager(models.Model):
-    def create_mail(self, template_name, context, to_address, from_address=None, subject=None):
-        """Create a Mail object with proper validation.
-
-        e.g.
-        mail = Mail.objects.create_mail("hello", {'name': 'Jens'},"me@jensneuhaus.de")
-        mail.send()
-        """
-
-        if not isinstance(template_name, MailTemplate):
-            try:
-                template = MailTemplate.objects.get(name__iexact=template_name)
-            except MailTemplate.DoesNotExist:
-                raise ValueError("{} is not a valid Template name".format(template_name))
-        else:
-            template = template_name
-        try:
-            context_string = json.dumps(context)
-            context_json = json.loads(context_string)
-        except ValueError:
-            raise ValueError("The given context is not valid: {}".format(context))
-
-        if not isinstance(context, dict):
-            raise ValueError("The given context is not a dictionary: {}".format(context))
-
-        if from_address is None:
-            from_address = settings.DEFAULT_FROM_EMAIL
-
-        try:
-            validate_email(from_address)
-        except ValidationError:
-            raise ValueError("The given email is not valid: {}".format(from_address))
-
-        try:
-            validate_email(to_address)
-        except ValidationError:
-            raise ValueError("The given email is not valid: {}".format(to_address))
-
-        mail = self.create(template=template, context=context_json, from_address=from_address, to_address=to_address,
-                           subject=subject)
-
-        return mail
-
 
 class MailTemplate(models.Model):
-
     name = models.CharField(
         _("Template name"),
         help_text=_("Template name; a short all-lowercase string"),
@@ -149,9 +103,57 @@ class MailTemplate(models.Model):
         return h.handle(html_string)
 
 
-class Mail(models.Model):
+class MailManager(models.Model):
+    def create_mail(self, template_name, context, to_address, from_address=None, subject=None):
+        """Create a Mail object with proper validation.
 
-    id = models.UUIDField(_('ID'), primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+        e.g.
+        mail = Mail.objects.create_mail("hello", {'name': 'Jens'},"me@jensneuhaus.de")
+        mail.send()
+        """
+
+        if not isinstance(template_name, MailTemplate):
+            try:
+                template = MailTemplate.objects.get(name__iexact=template_name)
+            except MailTemplate.DoesNotExist:
+                raise ValueError("{} is not a valid Template name".format(template_name))
+        else:
+            template = template_name
+        try:
+            context_string = json.dumps(context)
+            context_json = json.loads(context_string)
+        except ValueError:
+            raise ValueError("The given context is not valid: {}".format(context))
+
+        if not isinstance(context, dict):
+            raise ValueError("The given context is not a dictionary: {}".format(context))
+
+        if from_address is None:
+            from_address = settings.DEFAULT_FROM_EMAIL
+
+        try:
+            validate_email(from_address)
+        except ValidationError:
+            raise ValueError("The given email is not valid: {}".format(from_address))
+
+        try:
+            validate_email(to_address)
+        except ValidationError:
+            raise ValueError("The given email is not valid: {}".format(to_address))
+
+        mail = self.create(template=template, context=context_json, from_address=from_address, to_address=to_address,
+                           subject=subject)
+
+        return mail
+
+
+class Mail(models.Model):
+    id = models.UUIDField(_('ID'),
+        primary_key=True,
+        unique=True,
+        default=uuid.uuid4,
+        editable=False
+    )
 
     from_address = models.EmailField(
         _("Sender email address"),
@@ -277,9 +279,13 @@ class Mail(models.Model):
         else:
             footer = """Follow <a href="http://twitter.com/jensneuhaus" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">@jensneuhaus</a> on Twitter"""
 
+        context.update({
+            'EMAIL_SUBJECT': rendered_subject,
+            'EMAIL_FOOTER': footer
+        })
+
         output_dict = mail_template.make_output(context)
         output_dict['subject'] = rendered_subject
-        output_dict['subject'] = footer
 
         return output_dict
 
@@ -356,5 +362,3 @@ class Mail(models.Model):
 
         self.time_sent = timezone.now()
         self.save()
-
-
