@@ -8,7 +8,7 @@ import sendgrid
 from django.conf import settings
 from tinymce import models as tinymce_models
 
-from .logging import logger
+from .logger import logger
 
 try:
     from django.contrib.postgres.fields import JSONField
@@ -23,11 +23,6 @@ from django.template import Context, Template
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
-try:
-    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-except AttributeError:
-    print("Please add SENDGRID_API_KEY to your settings.")
 
 
 class MailTemplate(models.Model):
@@ -249,10 +244,8 @@ class Mail(models.Model):
 
     @classmethod
     def get_extra_context(cls):
-
-        return {
-            'PROJECT_NAME': settings.PROJECT_NAME
-        }
+        """Placeholder to add extra context."""
+        return {}
 
     def render_mail(self):
         """Check for existing MailTemplate. Text is needed, HTML is optional.
@@ -308,6 +301,8 @@ class Mail(models.Model):
 
             if not settings.SENDGRID_API_KEY:
                 raise ImproperlyConfigured("No SENDGRID_API_KEY set.")
+
+            sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
 
             data = {
                 "personalizations": [

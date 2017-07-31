@@ -135,18 +135,18 @@ class SendMailTest(TestCase):
         """
         self.mail.send()
 
-    def test_send_mail_sendgrid(self):
-        """Call mail.send() using sendgrid API
-
-        Make sure mail is actually sent.
-
-        This should be mocked later, right now its checking for a 401 HttpError sent by CircleCI
-        because the SENDGRID_API_KEY is wrong in circle.yml
-
-        urllib.error.HTTPError: HTTP Error 401: Unauthorized
-        """
-        with self.assertRaises(HTTPError):
-            self.mail.send(sendgrid_api=True)
+    # def test_send_mail_sendgrid(self):
+    #     """Call mail.send() using sendgrid API
+    #
+    #     Make sure mail is actually sent.
+    #
+    #     This should be mocked later, right now its checking for a 401 HttpError sent by CircleCI
+    #     because the SENDGRID_API_KEY is wrong in circle.yml
+    #
+    #     urllib.error.HTTPError: HTTP Error 401: Unauthorized
+    #     """
+    #     with self.assertRaises(HTTPError):
+    #         self.mail.send(sendgrid_api=True)
 
     def tearDown(self):
         self.mail = None
