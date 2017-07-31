@@ -7,14 +7,14 @@ test_django-saas-email
 
 Tests for `django-saas-email` models module.
 """
-from datetime import timedelta
-from urllib.error import HTTPError
+
 
 from django.conf import settings
 from django.test import TestCase, override_settings
-from django.utils import timezone
 
 from django_saas_email.models import Mail, MailTemplate
+
+from django.template import Context
 
 
 class CreateMailTest(TestCase):
@@ -212,12 +212,13 @@ class MailTemplateTest(TestCase):
             html_template="<p><b>Hello</b>, {{ name }}!</p>"
         )
         self.mail_template.save()
-        self.context = {'name': 'Max'}
 
-    def test_make_subject(self):
+        self.context = Context({'name': 'Max'})
+
+    def test_render_subject(self):
         """Check that the correct subject line is generated."""
         self.assertEqual(
-            self.mail_template.make_subject(self.context),
+            self.mail_template.render_subject(self.context),
             "Message for Max",
             msg="Mail template generated incorrect subject"
         )
@@ -227,8 +228,8 @@ class MailTemplateTest(TestCase):
         self.mail_template.text_template = "Hello, {{ name }}!"
         self.mail_template.save()
 
-        self.assertInHTML("<p><b>Hello</b>, Max!</p>", self.mail_template.make_output(self.context)['html'])
-        self.assertInHTML("Hello, Max!", self.mail_template.make_output(self.context)['text'])
+        self.assertInHTML("<p><b>Hello</b>, Max!</p>", self.mail_template.render_with_context(self.context)['html'])
+        self.assertInHTML("Hello, Max!", self.mail_template.render_with_context(self.context)['text'])
 
     def test_html_to_text(self):
         """Check that html_to_text() produces correct output."""
@@ -238,8 +239,19 @@ class MailTemplateTest(TestCase):
 
     def test_make_output_html_only(self):
         """Check that the correct html and text output is produced when only html template is provided."""
-        self.assertInHTML("<p><b>Hello</b>, Max!</p>", self.mail_template.make_output(self.context)['html'])
-        self.assertInHTML("**Hello**, Max!\n\n", self.mail_template.make_output(self.context)['text'])
+        self.assertInHTML("<p><b>Hello</b>, Max!</p>", self.mail_template.render_with_context(self.context)['html'])
+        self.assertInHTML("**Hello**, Max!\n\n", self.mail_template.render_with_context(self.context)['text'])
+
+    @override_settings(DJANGO_SASS_EMAIL_FOOTER=None)
+    def test_use_default_footer(self):
+        self.assertInHTML("<a href='#'>Your Email Footer</a>", self.mail_template.render_with_context(self.context)['html'])
+
+    @override_settings(DJANGO_SASS_EMAIL_FOOTER="<a href='#'>Follow me now</a>")
+    def test_use_django_saas_email_footer_setting_if_set(self):
+        self.assertInHTML("<a href='#'>Follow me now</a>", self.mail_template.render_with_context(self.context)['html'])
+
+    def test_mail_context(self):
+        pass
 
     def tearDown(self):
         self.mail_template = None
