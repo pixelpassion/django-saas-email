@@ -25,7 +25,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 
-class MailTemplate(models.Model):
+class AbstractMailTemplate(models.Model):
+
     name = models.CharField(
         _("Template name"),
         help_text=_("Template name; a short all-lowercase string"),
@@ -44,6 +45,7 @@ class MailTemplate(models.Model):
         _("HTML template (required)"),
         help_text=_("The HTML template, written with Django's template syntax; required")
     )
+
     text_template = models.TextField(
         _("Text template (optional)"),
         help_text=_(
@@ -54,11 +56,14 @@ class MailTemplate(models.Model):
         blank=True,
     )
 
+    class Meta:
+        abstract = True
+
     def __str__(self):
         return "%s" % self.name
 
     @classmethod
-    def get_footer(self):
+    def get_footer(cls):
         """The used footer in the email."""
         return settings.DJANGO_SASS_EMAIL_FOOTER or None
 
@@ -106,7 +111,12 @@ class MailTemplate(models.Model):
         return h.handle(html_string)
 
 
+class MailTemplate(AbstractMailTemplate):
+    pass
+
+
 class MailManager(models.Manager):
+
     def create_mail(self, template_name, context, to_address, from_address=None, subject=None):
         """Create a Mail object with proper validation.
 
@@ -150,8 +160,10 @@ class MailManager(models.Manager):
         return mail
 
 
-class Mail(models.Model):
-    id = models.UUIDField(_('ID'),
+class AbstractMail(models.Model):
+
+    id = models.UUIDField(
+        _('ID'),
         primary_key=True,
         unique=True,
         default=uuid.uuid4,
@@ -206,11 +218,12 @@ class Mail(models.Model):
         null=True,
         blank=True
     )
+
     context = JSONField(
         _("Data of email context"),
         help_text=_("JSON dump of context dictionary used to fill in templates"),
-        null=False,
-        blank=False
+        null=True,
+        blank=True
     )
 
     time_created = models.DateTimeField(
@@ -245,6 +258,9 @@ class Mail(models.Model):
     )
 
     objects = MailManager()
+
+    class Meta:
+        abstract = True
 
     def __str__(self):
         return "%s to %s" % (self.template, self.to_address)
@@ -359,3 +375,7 @@ class Mail(models.Model):
 
         self.time_sent = timezone.now()
         self.save()
+
+
+class Mail(AbstractMail):
+    pass
