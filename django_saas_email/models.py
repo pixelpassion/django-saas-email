@@ -59,11 +59,11 @@ class MailTemplate(models.Model):
 
     @classmethod
     def get_footer(self):
-        """ The used footer in the email """
+        """The used footer in the email."""
         return settings.DJANGO_SASS_EMAIL_FOOTER or None
 
     def render_subject(self, context):
-        """ Take a list of values (inputs) and format the subject template, returning the subject."""
+        """Take a list of values (inputs) and format the subject template, returning the subject."""
         return Template(self.subject).render(context)
 
     def render_with_context(self, context):
@@ -77,11 +77,11 @@ class MailTemplate(models.Model):
         email_content_html = Template(self.html_template).render(context)
 
         # Context for HTML Template, including EMAIL_CONTENT
-        html_context = Context({
+        html_context = {
             'EMAIL_CONTENT': email_content_html,
             'EMAIL_SUBJECT': self.render_subject(context),
             'EMAIL_FOOTER': self.get_footer(),
-        })
+        }
 
         html_output = render_to_string("django_saas_email/email_base.html", html_context)
 
@@ -164,6 +164,7 @@ class Mail(models.Model):
         null=False,
         blank=False
     )
+
     to_address = models.EmailField(
         _("Recipient email address"),
         help_text=_("The 'to' field of the email"),
@@ -180,7 +181,7 @@ class Mail(models.Model):
         editable=False
     )
 
-    # The following should maybe be a Charfield - depending on the anymail output
+    # The following should maybe be a CharField - depending on the anymail output
     delivery_status = models.IntegerField(
         _("Status of Mail sender"),
         help_text=_("The Mail sender status"),
