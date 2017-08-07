@@ -31,7 +31,7 @@ urlpatterns = [
         view=views.MailListView.as_view(),
         name='Mail_list',
     ),
-	url(
+    url(
         regex="^MailTemplate/~create/$",
         view=views.MailTemplateCreateView.as_view(),
         name='MailTemplate_create',
