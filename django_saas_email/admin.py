@@ -16,10 +16,12 @@ class MailTemplateAdmin(admin.ModelAdmin):
         mails_sent = 0
 
         if not settings.DJANGO_SAAS_TEST_EMAIL_ADDRESS:
-            raise ImproperlyConfigured("You need to add DJANGO_SAAS_TEST_EMAIL_ADDRESS=youremailaddress@example.com to test emails.")
+            raise ImproperlyConfigured(
+                "You need to add DJANGO_SAAS_TEST_EMAIL_ADDRESS=youremailaddress@example.com to test emails.")
 
-        for object in queryset:
-            create_and_send_mail(template_name=object.name, context={}, to_address=settings.DJANGO_SAAS_TEST_EMAIL_ADDRESS)
+        for template in queryset:
+            create_and_send_mail(
+                template_name=template.name, context={}, to_address=settings.DJANGO_SAAS_TEST_EMAIL_ADDRESS)
 
             mails_sent += 1
 
@@ -44,8 +46,8 @@ class MailAdmin(admin.ModelAdmin):
 
         mails_sent = 0
 
-        for object in queryset:
-            send_asynchronous_mail(str(object.id))
+        for mail in queryset:
+            send_asynchronous_mail(str(mail.id))
             mails_sent += 1
 
         if mails_sent == 1:

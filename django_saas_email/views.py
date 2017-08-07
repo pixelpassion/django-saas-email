@@ -7,10 +7,7 @@ from django.views.generic import (
     ListView
 )
 
-from .models import (
-	Mail,
-	MailTemplate,
-)
+from .models import Mail, MailTemplate
 
 
 class MailCreateView(CreateView):
@@ -61,4 +58,3 @@ class MailTemplateUpdateView(UpdateView):
 class MailTemplateListView(ListView):
 
     model = MailTemplate
-
