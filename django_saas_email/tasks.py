@@ -1,10 +1,10 @@
-from main.celery import app
+from celery import shared_task
 
 from .models import Mail
 
 
-@app.task(bind=True)
-def send_asynchronous_mail(self, mail_uuid, sendgrid_api=False):
+@shared_task
+def send_asynchronous_mail(mail_uuid, sendgrid_api=False):
     """Send an asynchronous mail by the given ID."""
     try:
         mail = Mail.objects.get(id=mail_uuid)

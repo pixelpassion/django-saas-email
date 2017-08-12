@@ -57,6 +57,7 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
+        "celery>=4.0",
         "django-model-utils>=2.0",
         "html2text>=2016.9.19",
         "sendgrid>=4.1.0",
