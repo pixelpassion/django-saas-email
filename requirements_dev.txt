@@ -1,5 +1,6 @@
 bumpversion==0.5.3
 wheel==0.29.0
+celery==4.1
 html2text==2016.9.19
 sendgrid==4.1.0
 django-tinymce==2.6.0
