@@ -62,10 +62,10 @@ class AbstractMailTemplate(models.Model):
     def __str__(self):
         return "%s" % self.name
 
-    @classmethod
-    def get_footer(cls):
+    @staticmethod
+    def get_footer():
         """The used footer in the email."""
-        return settings.DJANGO_SASS_EMAIL_FOOTER or None
+        return getattr(settings, 'DJANGO_SASS_EMAIL_FOOTER', None)
 
     def render_subject(self, context):
         """Take a list of values (inputs) and format the subject template, returning the subject."""
