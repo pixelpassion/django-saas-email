@@ -58,10 +58,9 @@ setup(
     include_package_data=True,
     install_requires=[
         "celery>=4.0",
-        "django-model-utils>=2.0",
-        "html2text>=2016.9.19",
-        "sendgrid>=4.1.0",
-        "django-tinymce>=2.6.0",
+        "html2text>=3.200.0",
+        "sendgrid>=3.0.0",
+        "django-tinymce>=2.5.0",
         "django-anymail>=0.9"
     ],
     license="MIT",
@@ -73,7 +72,7 @@ setup(
         'Framework :: Django :: 1.10',
         'Framework :: Django :: 1.11',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License'
+        'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
