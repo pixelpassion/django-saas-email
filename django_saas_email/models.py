@@ -110,9 +110,34 @@ class AbstractMailTemplate(models.Model):
         h = html2text.HTML2Text()
         return h.handle(html_string)
 
+    def preselected_attachments(self):
+        return Attachment.objects.filter(templateattachment__template=self)
+
 
 class MailTemplate(AbstractMailTemplate):
     pass
+
+
+class Attachment(models.Model):
+    name = models.CharField(max_length=100)
+    attached_file = models.FileField()
+    time_created = models.DateTimeField(
+        verbose_name=_('Creation time'),
+        default=timezone.now,
+        editable=False)
+
+    class Meta:
+        verbose_name = _('attachment')
+        verbose_name_plural = _('attachments')
+
+
+class TemplateAttachment(models.Model):
+    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE)
+    template = models.ForeignKey(MailTemplate, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = _('Preselected attachment')
+        verbose_name_plural = _('Preselected attachments')
 
 
 class MailManager(models.Manager):

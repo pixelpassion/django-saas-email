@@ -7,14 +7,17 @@ test_django-saas-email
 
 Tests for `django-saas-email` models module.
 """
-
+import tempfile
+import pathlib
+import shutil
 
 from django.conf import settings
 from django.test import TestCase, override_settings
 
-from django_saas_email.models import Mail, MailTemplate
+from django_saas_email.models import Mail, MailTemplate, Attachment, TemplateAttachment
 
 from django.template import Context
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class CreateMailTest(TestCase):
@@ -255,3 +258,31 @@ class MailTemplateTest(TestCase):
 
     def tearDown(self):
         self.mail_template = None
+
+
+class AttachmentTest(TestCase):
+    file_contents = b'Here the file contents'
+
+    def setUp(self):
+        self.media_root_old = settings.MEDIA_ROOT
+        self.temp_dir = pathlib.Path(tempfile.mkdtemp())
+        settings.MEDIA_ROOT = self.temp_dir
+        self.mail_template = MailTemplate(
+            name="test_template",
+            subject="Message for {{ name }}",
+            html_template="<p><b>Hello</b>, {{ name }}!</p>"
+        )
+        self.mail_template.save()
+        self.attachment = Attachment(name='attachment1', attached_file=SimpleUploadedFile('input.txt', self.file_contents))
+        self.attachment.save()
+        TemplateAttachment.objects.create(template=self.mail_template, attachment=self.attachment)
+
+    def testAttachmentUploaded(self):
+        self.assertEqual(open(self.temp_dir / 'input.txt', 'rb').read(), self.file_contents)
+
+    def test_preselected_attachments(self):
+        self.assertEqual(list(self.mail_template.preselected_attachments()), [self.attachment])
+
+    def tearDown(self):
+        settings.MEDIA_ROOT = self.media_root_old
+        shutil.rmtree(self.temp_dir)

@@ -56,4 +56,54 @@ urlpatterns = [
         view=views.MailTemplateListView.as_view(),
         name='MailTemplate_list',
     ),
+    url(
+        regex="^Attachment/~create/$",
+        view=views.AttachmentCreateView.as_view(),
+        name='Attachment_create',
+    ),
+    url(
+        regex="^Attachment/(?P<pk>\d+)/~delete/$",
+        view=views.AttachmentDeleteView.as_view(),
+        name='Attachment_delete',
+    ),
+    url(
+        regex="^Attachment/(?P<pk>\d+)/$",
+        view=views.AttachmentDetailView.as_view(),
+        name='Attachment_detail',
+    ),
+    url(
+        regex="^Attachment/(?P<pk>\d+)/~update/$",
+        view=views.AttachmentUpdateView.as_view(),
+        name='Attachment_update',
+    ),
+    url(
+        regex="^Attachment/$",
+        view=views.AttachmentListView.as_view(),
+        name='Attachment_list',
+    ),
+    url(
+        regex="^TemplateAttachment/~create/$",
+        view=views.TemplateAttachmentCreateView.as_view(),
+        name='TemplateAttachment_create',
+    ),
+    url(
+        regex="^TemplateAttachment/(?P<pk>\d+)/~delete/$",
+        view=views.TemplateAttachmentDeleteView.as_view(),
+        name='TemplateAttachment_delete',
+    ),
+    url(
+        regex="^TemplateAttachment/(?P<pk>\d+)/$",
+        view=views.TemplateAttachmentDetailView.as_view(),
+        name='TemplateAttachment_detail',
+    ),
+    url(
+        regex="^TemplateAttachment/(?P<pk>\d+)/~update/$",
+        view=views.TemplateAttachmentUpdateView.as_view(),
+        name='TemplateAttachment_update',
+    ),
+    url(
+        regex="^TemplateAttachment/$",
+        view=views.TemplateAttachmentListView.as_view(),
+        name='TemplateAttachment_list',
+    ),
 ]
