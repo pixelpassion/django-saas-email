@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-
+import base64
 import json
+import mimetypes
 import uuid
 
 import html2text
@@ -142,7 +143,7 @@ class TemplateAttachment(models.Model):
 
 class MailManager(models.Manager):
 
-    def create_mail(self, template_name, context, to_address, from_address=None, subject=None):
+    def create_mail(self, template_name, context, to_address, from_address=None, subject=None, attachments=None):
         """Create a Mail object with proper validation.
 
         e.g.
@@ -181,6 +182,10 @@ class MailManager(models.Manager):
 
         mail = self.create(template=template, context=context_json, from_address=from_address, to_address=to_address,
                            subject=subject)
+
+        if attachments is not None:
+            for attachment in attachments:
+                mail.attachments.add(attachment)
 
         return mail
 
@@ -282,6 +287,11 @@ class AbstractMail(models.Model):
         editable=False,
     )
 
+    attachments = models.ManyToManyField(
+        Attachment,
+        null=True, blank=True
+    )
+
     objects = MailManager()
 
     class Meta:
@@ -366,6 +376,17 @@ class AbstractMail(models.Model):
                     }
                 ]
             }
+            attachments = []
+            for attachment in self.attachments.all():
+                content = base64.b64encode(attachment.attached_file.read()).decode('ascii')
+                attachments.append({
+                    'content': content,
+                    'type': mimetypes.guess_type(attachment.attached_file.name),
+                    'filename': attachment.attached_file.name,
+                    'disposition': 'attachment',
+                })
+            data['attachments'] = attachments
+
             response = sg.client.mail.send.post(request_body=data)
             logger.debug("Email with UUID {} was sent with Sendgrid API.".format(self.id))
             logger.debug("Response Status Code: {}, Body: {}, Headers: {}".format(response.status_code, response.body,
@@ -391,6 +412,8 @@ class AbstractMail(models.Model):
                     self.from_address,
                     [self.to_address]
                 )
+            for attachment in self.attachments.all():
+                msg.attach(attachment.attached_file.name, content=attachment.attached_file.read())
 
             msg.send()
 
