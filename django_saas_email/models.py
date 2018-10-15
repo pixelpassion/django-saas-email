@@ -32,26 +32,29 @@ class AbstractMailTemplate(models.Model):
         _("Template name"),
         help_text=_("Template name; a short all-lowercase string"),
         max_length=100,
-        unique=True
+        unique=True,
     )
 
     subject = models.CharField(
         _("Email subject line template"),
-        help_text=_("A format string like \"Hello {}\"; required"),
-        max_length=200
+        help_text=_('A format string like "Hello {}"; required'),
+        max_length=200,
     )
 
     # HTML field for the html
     html_template = tinymce_models.HTMLField(
         _("HTML template (required)"),
-        help_text=_("The HTML template, written with Django's template syntax; required")
+        help_text=_(
+            "The HTML template, written with Django's template syntax; required"
+        ),
     )
 
     text_template = models.TextField(
         _("Text template (optional)"),
         help_text=_(
             "This is an optional field for adding a custom text-only version of this template. "
-            "If left blank, the plaintext email will be generated dynamically from the HTML when needed."),
+            "If left blank, the plaintext email will be generated dynamically from the HTML when needed."
+        ),
         default="",
         null=True,
         blank=True,
@@ -66,7 +69,7 @@ class AbstractMailTemplate(models.Model):
     @staticmethod
     def get_footer():
         """The used footer in the email."""
-        return getattr(settings, 'DJANGO_SASS_EMAIL_FOOTER', None)
+        return getattr(settings, "DJANGO_SASS_EMAIL_FOOTER", None)
 
     def render_subject(self, context):
         """Take a list of values (inputs) and format the subject template, returning the subject."""
@@ -84,22 +87,21 @@ class AbstractMailTemplate(models.Model):
 
         # Context for HTML Template, including EMAIL_CONTENT
         html_context = {
-            'EMAIL_CONTENT': email_content_html,
-            'EMAIL_SUBJECT': self.render_subject(context),
-            'EMAIL_FOOTER': self.get_footer(),
+            "EMAIL_CONTENT": email_content_html,
+            "EMAIL_SUBJECT": self.render_subject(context),
+            "EMAIL_FOOTER": self.get_footer(),
         }
 
-        html_output = render_to_string("django_saas_email/email_base.html", html_context)
+        html_output = render_to_string(
+            "django_saas_email/email_base.html", html_context
+        )
 
         if self.text_template:
             text_output = Template(self.text_template).render(context)
         else:
             text_output = self.html_to_text(email_content_html)
 
-        return {
-            'html': html_output,
-            'text': text_output
-        }
+        return {"html": html_output, "text": text_output}
 
     def html_to_text(self, html_string):
         """A helper method that converts a string containing HTML into a string with plaintext only.
@@ -121,15 +123,14 @@ class MailTemplate(AbstractMailTemplate):
 
 class Attachment(models.Model):
     name = models.CharField(max_length=100)
-    attached_file = models.FileField()
+    attached_file = models.FileField(upload_to="email-attachments")
     time_created = models.DateTimeField(
-        verbose_name=_('Creation time'),
-        default=timezone.now,
-        editable=False)
+        verbose_name=_("Creation time"), default=timezone.now, editable=False
+    )
 
     class Meta:
-        verbose_name = _('attachment')
-        verbose_name_plural = _('attachments')
+        verbose_name = _("attachment")
+        verbose_name_plural = _("attachments")
 
 
 class TemplateAttachment(models.Model):
@@ -137,13 +138,20 @@ class TemplateAttachment(models.Model):
     template = models.ForeignKey(MailTemplate, on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = _('Preselected attachment')
-        verbose_name_plural = _('Preselected attachments')
+        verbose_name = _("Preselected attachment")
+        verbose_name_plural = _("Preselected attachments")
 
 
 class MailManager(models.Manager):
-
-    def create_mail(self, template_name, context, to_address, from_address=None, subject=None, attachments=None):
+    def create_mail(
+        self,
+        template_name,
+        context,
+        to_address,
+        from_address=None,
+        subject=None,
+        attachments=None,
+    ):
         """Create a Mail object with proper validation.
 
         e.g.
@@ -155,7 +163,9 @@ class MailManager(models.Manager):
             try:
                 template = MailTemplate.objects.get(name__iexact=template_name)
             except MailTemplate.DoesNotExist:
-                raise ValueError("{} is not a valid Template name".format(template_name))
+                raise ValueError(
+                    "{} is not a valid Template name".format(template_name)
+                )
         else:
             template = template_name
         try:
@@ -165,7 +175,9 @@ class MailManager(models.Manager):
             raise ValueError("The given context is not valid: {}".format(context))
 
         if not isinstance(context, dict):
-            raise ValueError("The given context is not a dictionary: {}".format(context))
+            raise ValueError(
+                "The given context is not a dictionary: {}".format(context)
+            )
 
         if from_address is None:
             from_address = settings.DEFAULT_FROM_EMAIL
@@ -180,8 +192,13 @@ class MailManager(models.Manager):
         except ValidationError:
             raise ValueError("The given email is not valid: {}".format(to_address))
 
-        mail = self.create(template=template, context=context_json, from_address=from_address, to_address=to_address,
-                           subject=subject)
+        mail = self.create(
+            template=template,
+            context=context_json,
+            from_address=from_address,
+            to_address=to_address,
+            subject=subject,
+        )
 
         if attachments is not None:
             for attachment in attachments:
@@ -193,25 +210,21 @@ class MailManager(models.Manager):
 class AbstractMail(models.Model):
 
     id = models.UUIDField(
-        _('ID'),
-        primary_key=True,
-        unique=True,
-        default=uuid.uuid4,
-        editable=False
+        _("ID"), primary_key=True, unique=True, default=uuid.uuid4, editable=False
     )
 
     from_address = models.EmailField(
         _("Sender email address"),
         help_text=_("The 'from' field of the email"),
         null=False,
-        blank=False
+        blank=False,
     )
 
     to_address = models.EmailField(
         _("Recipient email address"),
         help_text=_("The 'to' field of the email"),
         null=False,
-        blank=False
+        blank=False,
     )
 
     # delivery_service (Sendgrid etc. - should be a CharField with Options)
@@ -220,7 +233,7 @@ class AbstractMail(models.Model):
         help_text=_("The ID is saved after correct sending"),
         null=True,
         blank=True,
-        editable=False
+        editable=False,
     )
 
     # The following should maybe be a CharField - depending on the anymail output
@@ -229,7 +242,7 @@ class AbstractMail(models.Model):
         help_text=_("The Mail sender status"),
         null=True,
         blank=True,
-        editable=False
+        editable=False,
     )
 
     template = models.ForeignKey(
@@ -238,7 +251,7 @@ class AbstractMail(models.Model):
         help_text=_("The used template"),
         null=False,
         blank=False,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
 
     subject = models.CharField(
@@ -246,14 +259,14 @@ class AbstractMail(models.Model):
         help_text=_("Subject line for a mail"),
         max_length=500,
         null=True,
-        blank=True
+        blank=True,
     )
 
     context = JSONField(
         _("Data of email context"),
         help_text=_("JSON dump of context dictionary used to fill in templates"),
         null=True,
-        blank=True
+        blank=True,
     )
 
     time_created = models.DateTimeField(
@@ -287,10 +300,7 @@ class AbstractMail(models.Model):
         editable=False,
     )
 
-    attachments = models.ManyToManyField(
-        Attachment,
-        null=True, blank=True
-    )
+    attachments = models.ManyToManyField(Attachment, null=True, blank=True)
 
     objects = MailManager()
 
@@ -307,10 +317,7 @@ class AbstractMail(models.Model):
 
     def get_context(self):
 
-        return Context({
-            **self.context,
-            **self.get_extra_context(),
-        })
+        return Context({**self.context, **self.get_extra_context()})
 
     def render_mail(self):
         """Check for existing MailTemplate. Text is needed, HTML is optional.
@@ -323,7 +330,9 @@ class AbstractMail(models.Model):
         try:
             mail_template = MailTemplate.objects.get(name=self.template)
         except MailTemplate.DoesNotExist:
-            raise ImproperlyConfigured("No mail template found with name: {}".format(self.template))
+            raise ImproperlyConfigured(
+                "No mail template found with name: {}".format(self.template)
+            )
 
         if self.subject:
             rendered_subject = Template(self.subject).render(context)
@@ -331,7 +340,7 @@ class AbstractMail(models.Model):
             rendered_subject = mail_template.render_subject(context)
 
         output_dict = mail_template.render_with_context(context)
-        output_dict['subject'] = rendered_subject
+        output_dict["subject"] = rendered_subject
 
         return output_dict
 
@@ -344,9 +353,9 @@ class AbstractMail(models.Model):
         """
         rendered_output = self.render_mail()
 
-        html_content = rendered_output['html']
-        txt_content = rendered_output['text']
-        rendered_subject = rendered_output['subject']
+        html_content = rendered_output["html"]
+        txt_content = rendered_output["text"]
+        rendered_subject = rendered_output["subject"]
 
         if sendgrid_api:
 
@@ -357,40 +366,35 @@ class AbstractMail(models.Model):
 
             data = {
                 "personalizations": [
-                    {
-                        "to": [
-                            {
-                                "email": self.to_address
-                            }
-                        ],
-                        "subject": rendered_subject
-                    }
+                    {"to": [{"email": self.to_address}], "subject": rendered_subject}
                 ],
-                "from": {
-                    "email": self.from_address
-                },
-                "content": [
-                    {
-                        "type": "text/plain",
-                        "value": txt_content
-                    }
-                ]
+                "from": {"email": self.from_address},
+                "content": [{"type": "text/plain", "value": txt_content}],
             }
             attachments = []
             for attachment in self.attachments.all():
-                content = base64.b64encode(attachment.attached_file.read()).decode('ascii')
-                attachments.append({
-                    'content': content,
-                    'type': mimetypes.guess_type(attachment.attached_file.name),
-                    'filename': attachment.attached_file.name,
-                    'disposition': 'attachment',
-                })
-            data['attachments'] = attachments
+                content = base64.b64encode(attachment.attached_file.read()).decode(
+                    "ascii"
+                )
+                attachments.append(
+                    {
+                        "content": content,
+                        "type": mimetypes.guess_type(attachment.attached_file.name),
+                        "filename": attachment.attached_file.name,
+                        "disposition": "attachment",
+                    }
+                )
+            data["attachments"] = attachments
 
             response = sg.client.mail.send.post(request_body=data)
-            logger.debug("Email with UUID {} was sent with Sendgrid API.".format(self.id))
-            logger.debug("Response Status Code: {}, Body: {}, Headers: {}".format(response.status_code, response.body,
-                                                                                  response.headers))
+            logger.debug(
+                "Email with UUID {} was sent with Sendgrid API.".format(self.id)
+            )
+            logger.debug(
+                "Response Status Code: {}, Body: {}, Headers: {}".format(
+                    response.status_code, response.body, response.headers
+                )
+            )
 
             self.used_backend = "Sendgrid ({})".format(response.status_code)
 
@@ -398,22 +402,19 @@ class AbstractMail(models.Model):
 
             if html_content:
                 msg = EmailMultiAlternatives(
-                    rendered_subject,
-                    txt_content,
-                    self.from_address,
-                    [self.to_address]
+                    rendered_subject, txt_content, self.from_address, [self.to_address]
                 )
                 msg.attach_alternative(html_content, "text/html")
 
             else:
                 msg = EmailMessage(
-                    rendered_subject,
-                    txt_content,
-                    self.from_address,
-                    [self.to_address]
+                    rendered_subject, txt_content, self.from_address, [self.to_address]
                 )
             for attachment in self.attachments.all():
-                msg.attach(attachment.attached_file.name, content=attachment.attached_file.read())
+                msg.attach(
+                    attachment.attached_file.name,
+                    content=attachment.attached_file.read(),
+                )
 
             msg.send()
 
