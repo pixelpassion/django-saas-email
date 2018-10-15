@@ -2,10 +2,22 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from .models import Mail, MailTemplate
+from .models import Mail, MailTemplate, Attachment, TemplateAttachment
 from .tasks import send_asynchronous_mail
 from .utils import create_and_send_mail
 from django.core.exceptions import ImproperlyConfigured
+
+
+class TemplateAttachmentInline(admin.TabularInline):
+    model = TemplateAttachment
+
+
+@admin.register(Attachment)
+class AttachmentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    ordering = ('-time_created',)
+    search_fields = ('name', )
+    readonly_fields = ('time_created', 'attached_file')
 
 
 @admin.register(MailTemplate)
@@ -37,6 +49,7 @@ class MailTemplateAdmin(admin.ModelAdmin):
     search_fields = []
     ordering = ('name',)
     actions = [test_mail_template, ]
+    inlines = [TemplateAttachmentInline, ]
 
 
 @admin.register(Mail)
@@ -67,3 +80,5 @@ class MailAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         'time_created', 'time_sent', 'time_delivered', 'used_backend', 'delivery_mail_id', 'delivery_status')
+
+
