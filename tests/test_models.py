@@ -205,6 +205,53 @@ class SendMailInfoTest(TestCase):
         self.mail = None
 
 
+@override_settings(SENDGRID_API_KEY='test-api-key')
+class MailAttachmentsSendTest(TestCase):
+    file_contents = b'Here the file contents'
+
+    def setUp(self):
+        self.mail_template = MailTemplate(
+            name="test_template",
+            subject="Message for {{ name }}",
+            html_template="<p><b>Hello</b>, {{ name }}!</p>"
+        )
+        self.mail_template.save()
+        self.context = Context({'name': 'Max'})
+        self.media_root_old = settings.MEDIA_ROOT
+        self.temp_dir = pathlib.Path(tempfile.mkdtemp())
+        settings.MEDIA_ROOT = self.temp_dir
+        self.attachment = Attachment(name='attachment1',
+                                     attached_file=SimpleUploadedFile('input.txt', self.file_contents))
+        self.attachment.save()
+        TemplateAttachment.objects.create(template=self.mail_template, attachment=self.attachment)
+
+    def testGridMailSend(self):
+        self.mail = Mail.objects.create_mail(
+            self.mail_template,
+            {'name': 'Max'},
+            'mailtest@sink.sendgrid.net',
+            'test@example.com',
+            subject="Custom subject",
+            attachments=[self.attachment]
+        )
+
+        # Send the mail and record time sent
+        self.mail.send(sendgrid_api=True)
+
+    def testMailSend(self):
+        self.mail = Mail.objects.create_mail(
+            self.mail_template,
+            {'name': 'Max'},
+            'mailtest@sink.sendgrid.net',
+            'test@example.com',
+            subject="Custom subject",
+            attachments=[self.attachment]
+        )
+
+        # Send the mail and record time sent
+        self.mail.send()
+
+
 class MailTemplateTest(TestCase):
 
     def setUp(self):
