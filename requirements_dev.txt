@@ -3,6 +3,6 @@ wheel==0.29.0
 celery==4.1
 html2text==2016.9.19
 sendgrid==4.1.0
-django-tinymce==2.6.0
+django-tinymce==2.7.0
 django-anymail==0.9
 jsonfield==2.0.2
