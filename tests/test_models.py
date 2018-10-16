@@ -19,6 +19,7 @@ from django_saas_email.models import Mail, MailTemplate, Attachment, TemplateAtt
 
 from django.template import Context
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.exceptions import ValidationError
 
 from override_storage import override_storage
 from python_http_client import Client
@@ -220,6 +221,21 @@ class SendMailInfoTest(TestCase):
         # Send the mail and record time sent
         self.mail.send()
 
+    def test_mail_with_text(self):
+
+        template = MailTemplate.objects.get(name="test_template")
+        self.mail = Mail.objects.create_mail(
+            None,
+            {"name": "Max"},
+            "mailtest@sink.sendgrid.net",
+            "test@example.com",
+            subject="Custom subject",
+            text="Test text",
+        )
+
+        # Send the mail and record time sent
+        self.mail.send()
+
     def test_send_mail_subject(self):
         """Check that correct subject is recorded."""
         self.assertEqual(
@@ -232,6 +248,50 @@ class SendMailInfoTest(TestCase):
         #     (self.mail.time_sent - timezone.now()) < timedelta(seconds=2),
         #     msg="Mail time_sent recorded inaccurately"
         # )
+
+    def test_both_template_and_text_specified(self):
+        template = MailTemplate.objects.get(name="test_template")
+        with self.assertRaises(ValidationError):
+            self.mail = Mail.objects.create_mail(
+                template,
+                {"name": "Max"},
+                "mailtest@sink.sendgrid.net",
+                "test@example.com",
+                subject="Custom subject",
+                text="Text",
+            )
+
+    def test_none_of_template_and_text_specified(self):
+        with self.assertRaises(ValidationError):
+            self.mail = Mail.objects.create_mail(
+                None,
+                {"name": "Max"},
+                "mailtest@sink.sendgrid.net",
+                "test@example.com",
+                subject="Custom subject",
+            )
+
+    def test_save_both_template_and_text_specified(self):
+        template = MailTemplate.objects.get(name="test_template")
+        with self.assertRaises(ValidationError):
+            Mail.objects.create(
+                template=template,
+                context={},
+                from_address="test@example.com",
+                to_address="mailtest@sink.sendgrid.net",
+                subject="Custom subject",
+                text="Text",
+            )
+
+    def test_save_none_of_template_and_text_specified(self):
+        with self.assertRaises(ValidationError):
+            Mail.objects.create(
+                template=None,
+                context={},
+                from_address="test@example.com",
+                to_address="mailtest@sink.sendgrid.net",
+                subject="Custom subject",
+            )
 
     def tearDown(self):
         self.mail = None
@@ -284,22 +344,16 @@ class MailAttachmentsSendTest(TestCase):
         email_from = "test@example.com"
         subject = "Custom subject"
         self.mail = Mail.objects.create_mail(
-            self.mail_template,
-            {"name": "Max"},
-            email,
-            email_from,
-            subject=subject,
+            self.mail_template, {"name": "Max"}, email, email_from, subject=subject
         )
         self.mail.send(sendgrid_api=True)
         args, kwargs = post.call_args
-        print(kwargs)
-        request_body = kwargs['request_body']
-        personalizations = request_body['personalizations']
+        request_body = kwargs["request_body"]
+        personalizations = request_body["personalizations"]
         self.assertEqual(len(personalizations), 1)
-        self.assertEqual(personalizations[0]['to'][0]['email'], email)
-        self.assertEqual(request_body['from']['email'], email_from)
-        self.assertEqual(request_body['attachments'], [])
-
+        self.assertEqual(personalizations[0]["to"][0]["email"], email)
+        self.assertEqual(request_body["from"]["email"], email_from)
+        self.assertEqual(request_body["attachments"], [])
 
     def testMailSend(self):
         self.mail = Mail.objects.create_mail(
