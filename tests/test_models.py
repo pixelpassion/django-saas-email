@@ -269,7 +269,7 @@ class MailAttachmentsSendTest(TestCase):
             "mailtest@sink.sendgrid.net",
             "test@example.com",
             subject="Custom subject",
-            attachments=[self.attachment],
+            selected_attachments=[self.attachment],
         )
 
         # Send the mail and record time sent
@@ -278,6 +278,29 @@ class MailAttachmentsSendTest(TestCase):
         content = base64.b64decode(kwargs["request_body"]["attachments"][0]["content"])
         self.assertEqual(content, self.file_contents)
 
+    @mock.patch.object(Client, "post", create=True)
+    def testGridMailSendNoAttachments(self, post):
+        email = "mailtest@sink.sendgrid.net"
+        email_from = "test@example.com"
+        subject = "Custom subject"
+        self.mail = Mail.objects.create_mail(
+            self.mail_template,
+            {"name": "Max"},
+            email,
+            email_from,
+            subject=subject,
+        )
+        self.mail.send(sendgrid_api=True)
+        args, kwargs = post.call_args
+        print(kwargs)
+        request_body = kwargs['request_body']
+        personalizations = request_body['personalizations']
+        self.assertEqual(len(personalizations), 1)
+        self.assertEqual(personalizations[0]['to'][0]['email'], email)
+        self.assertEqual(request_body['from']['email'], email_from)
+        self.assertEqual(request_body['attachments'], [])
+
+
     def testMailSend(self):
         self.mail = Mail.objects.create_mail(
             self.mail_template,
@@ -285,7 +308,7 @@ class MailAttachmentsSendTest(TestCase):
             "mailtest@sink.sendgrid.net",
             "test@example.com",
             subject="Custom subject",
-            attachments=[self.attachment],
+            selected_attachments=[self.attachment],
         )
 
         # Send the mail and record time sent
@@ -390,5 +413,5 @@ class AttachmentTest(TestCase):
 
     def test_preselected_attachments(self):
         self.assertEqual(
-            list(self.mail_template.preselected_attachments()), [self.attachment]
+            list(self.mail_template.preselected_attachments.all()), [self.attachment]
         )
