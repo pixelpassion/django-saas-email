@@ -120,7 +120,7 @@ class MailTemplate(AbstractMailTemplate):
     pass
 
 
-class Attachment(models.Model):
+class AbstractAttachment(models.Model):
     name = models.CharField(max_length=100)
     attached_file = models.FileField(upload_to="email-attachments")
     time_created = models.DateTimeField(
@@ -130,11 +130,16 @@ class Attachment(models.Model):
     class Meta:
         verbose_name = _("attachment")
         verbose_name_plural = _("attachments")
+        abstract = True
+
+
+class Attachment(AbstractAttachment):
+    pass
 
 
 class TemplateAttachment(models.Model):
-    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE)
-    template = models.ForeignKey(MailTemplate, on_delete=models.CASCADE)
+    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE, related_name='templates')
+    template = models.ForeignKey(MailTemplate, on_delete=models.CASCADE, related_name='attachments')
 
     class Meta:
         verbose_name = _("Preselected attachment")
