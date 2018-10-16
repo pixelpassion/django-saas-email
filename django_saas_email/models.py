@@ -304,7 +304,7 @@ class AbstractMail(models.Model):
         editable=False,
     )
 
-    selected_attachments = models.ManyToManyField(Attachment, null=True, blank=True)
+    selected_attachments = models.ManyToManyField(Attachment, blank=True)
 
     objects = MailManager()
 
