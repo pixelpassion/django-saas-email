@@ -60,6 +60,8 @@ class AbstractMailTemplate(models.Model):
         blank=True,
     )
 
+    preselected_attachments = models.ManyToManyField('Attachment', through='TemplateAttachment', blank=True)
+
     class Meta:
         abstract = True
 
@@ -113,9 +115,6 @@ class AbstractMailTemplate(models.Model):
         h = html2text.HTML2Text()
         return h.handle(html_string)
 
-    def preselected_attachments(self):
-        return Attachment.objects.filter(templateattachment__template=self)
-
 
 class MailTemplate(AbstractMailTemplate):
     pass
@@ -150,7 +149,7 @@ class MailManager(models.Manager):
         to_address,
         from_address=None,
         subject=None,
-        attachments=None,
+        selected_attachments=None,
     ):
         """Create a Mail object with proper validation.
 
@@ -200,9 +199,9 @@ class MailManager(models.Manager):
             subject=subject,
         )
 
-        if attachments is not None:
-            for attachment in attachments:
-                mail.attachments.add(attachment)
+        if selected_attachments is not None:
+            for attachment in selected_attachments:
+                mail.selected_attachments.add(attachment)
 
         return mail
 
@@ -300,7 +299,7 @@ class AbstractMail(models.Model):
         editable=False,
     )
 
-    attachments = models.ManyToManyField(Attachment, null=True, blank=True)
+    selected_attachments = models.ManyToManyField(Attachment, null=True, blank=True)
 
     objects = MailManager()
 
@@ -372,7 +371,7 @@ class AbstractMail(models.Model):
                 "content": [{"type": "text/plain", "value": txt_content}],
             }
             attachments = []
-            for attachment in self.attachments.all():
+            for attachment in self.selected_attachments.all():
                 content = base64.b64encode(attachment.attached_file.read()).decode(
                     "ascii"
                 )
@@ -410,7 +409,7 @@ class AbstractMail(models.Model):
                 msg = EmailMessage(
                     rendered_subject, txt_content, self.from_address, [self.to_address]
                 )
-            for attachment in self.attachments.all():
+            for attachment in self.selected_attachments.all():
                 msg.attach(
                     attachment.attached_file.name,
                     content=attachment.attached_file.read(),
