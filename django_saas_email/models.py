@@ -60,7 +60,9 @@ class AbstractMailTemplate(models.Model):
         blank=True,
     )
 
-    preselected_attachments = models.ManyToManyField('Attachment', through='TemplateAttachment', blank=True)
+    preselected_attachments = models.ManyToManyField(
+        "Attachment", through="TemplateAttachment", blank=True
+    )
 
     class Meta:
         abstract = True
@@ -138,8 +140,12 @@ class Attachment(AbstractAttachment):
 
 
 class TemplateAttachment(models.Model):
-    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE, related_name='templates')
-    template = models.ForeignKey(MailTemplate, on_delete=models.CASCADE, related_name='attachments')
+    attachment = models.ForeignKey(
+        Attachment, on_delete=models.CASCADE, related_name="templates"
+    )
+    template = models.ForeignKey(
+        MailTemplate, on_delete=models.CASCADE, related_name="attachments"
+    )
 
     class Meta:
         verbose_name = _("Preselected attachment")
@@ -149,12 +155,13 @@ class TemplateAttachment(models.Model):
 class MailManager(models.Manager):
     def create_mail(
         self,
-        template_name,
-        context,
-        to_address,
+        template_name=None,
+        context=None,
+        to_address=None,
         from_address=None,
         subject=None,
         selected_attachments=None,
+        text=None,
     ):
         """Create a Mail object with proper validation.
 
@@ -163,25 +170,38 @@ class MailManager(models.Manager):
         mail.send()
         """
 
-        if not isinstance(template_name, MailTemplate):
+        if (template_name is None) == (text is None):
+            raise ValidationError(
+                "Exactly one of `text` or `template_name` must be specified"
+            )
+        if not to_address:
+            raise ValidationError("`to_address` must be specified")
+        if template_name:
+            if not isinstance(template_name, MailTemplate):
+                try:
+                    template = MailTemplate.objects.get(name__iexact=template_name)
+                except MailTemplate.DoesNotExist:
+                    raise ValueError(
+                        "{} is not a valid Template name".format(template_name)
+                    )
+            else:
+                template = template_name
+            if not context:
+                raise ValidationError("`context` must be specified when using template")
+
             try:
-                template = MailTemplate.objects.get(name__iexact=template_name)
-            except MailTemplate.DoesNotExist:
+                context_string = json.dumps(context)
+                context_json = json.loads(context_string)
+            except ValueError:
+                raise ValueError("The given context is not valid: {}".format(context))
+
+            if not isinstance(context, dict):
                 raise ValueError(
-                    "{} is not a valid Template name".format(template_name)
+                    "The given context is not a dictionary: {}".format(context)
                 )
         else:
-            template = template_name
-        try:
-            context_string = json.dumps(context)
-            context_json = json.loads(context_string)
-        except ValueError:
-            raise ValueError("The given context is not valid: {}".format(context))
-
-        if not isinstance(context, dict):
-            raise ValueError(
-                "The given context is not a dictionary: {}".format(context)
-            )
+            template = None
+            context_json = None
 
         if from_address is None:
             from_address = settings.DEFAULT_FROM_EMAIL
@@ -202,6 +222,7 @@ class MailManager(models.Manager):
             from_address=from_address,
             to_address=to_address,
             subject=subject,
+            text=text,
         )
 
         if selected_attachments is not None:
@@ -253,9 +274,13 @@ class AbstractMail(models.Model):
         MailTemplate,
         verbose_name=_("Used Mail template"),
         help_text=_("The used template"),
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         on_delete=models.CASCADE,
+    )
+
+    text = models.TextField(
+        verbose_name=_("Message text (plain)"), null=True, blank=True
     )
 
     subject = models.CharField(
@@ -320,33 +345,41 @@ class AbstractMail(models.Model):
         return {}
 
     def get_context(self):
-
         return Context({**self.context, **self.get_extra_context()})
+
+    def save(self, *args, **kwargs):
+        if (self.template is None) == (self.text is None):
+            raise ValidationError(
+                "Exactly one of `template` or `text` must be specified"
+            )
+        super().save(*args, **kwargs)
 
     def render_mail(self):
         """Check for existing MailTemplate. Text is needed, HTML is optional.
 
         Returns a dictionary containing subject, text output, and html output.
         """
+        if self.template:
+            context = self.get_context()
 
-        context = self.get_context()
+            try:
+                mail_template = MailTemplate.objects.get(name=self.template)
+            except MailTemplate.DoesNotExist:
+                raise ImproperlyConfigured(
+                    "No mail template found with name: {}".format(self.template)
+                )
 
-        try:
-            mail_template = MailTemplate.objects.get(name=self.template)
-        except MailTemplate.DoesNotExist:
-            raise ImproperlyConfigured(
-                "No mail template found with name: {}".format(self.template)
-            )
+            if self.subject:
+                rendered_subject = Template(self.subject).render(context)
+            else:
+                rendered_subject = mail_template.render_subject(context)
 
-        if self.subject:
-            rendered_subject = Template(self.subject).render(context)
+            output_dict = mail_template.render_with_context(context)
+            output_dict["subject"] = rendered_subject
+
+            return output_dict
         else:
-            rendered_subject = mail_template.render_subject(context)
-
-        output_dict = mail_template.render_with_context(context)
-        output_dict["subject"] = rendered_subject
-
-        return output_dict
+            return {"subject": self.subject, "text": self.text, "html": None}
 
     def send(self, sendgrid_api=False):
         """Send the mail using data from the Mail object.
