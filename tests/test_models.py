@@ -339,12 +339,17 @@ class MailAttachmentsSendTest(TestCase):
         self.assertEqual(content, self.file_contents)
 
     @mock.patch.object(Client, "post", create=True)
-    def testGridMailSendNoAttachments(self, post):
+    def testGridMailSendNoTemplateAttachments(self, post):
         email = "mailtest@sink.sendgrid.net"
         email_from = "test@example.com"
         subject = "Custom subject"
+        att = Attachment(
+            name="attachment2",
+            attached_file=SimpleUploadedFile("input.txt", b'Some another attachment'),
+        )
+        att.save()
         self.mail = Mail.objects.create_mail(
-            self.mail_template, {"name": "Max"}, email, email_from, subject=subject
+            self.mail_template, {"name": "Max"}, email, email_from, subject=subject, selected_attachments=[att]
         )
         self.mail.send(sendgrid_api=True)
         args, kwargs = post.call_args
@@ -353,7 +358,11 @@ class MailAttachmentsSendTest(TestCase):
         self.assertEqual(len(personalizations), 1)
         self.assertEqual(personalizations[0]["to"][0]["email"], email)
         self.assertEqual(request_body["from"]["email"], email_from)
-        self.assertEqual(request_body["attachments"], [])
+        # Check if Template attachment is not present
+        attachment_contents = list(map(base64.b64decode, [a['content'] for a in request_body['attachments']]))
+        self.assertFalse(self.file_contents in attachment_contents)
+        self.assertTrue(att.attached_file.read() in attachment_contents)
+
 
     def testMailSend(self):
         self.mail = Mail.objects.create_mail(
