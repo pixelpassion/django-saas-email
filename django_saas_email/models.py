@@ -21,12 +21,15 @@ from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.core.validators import validate_email
 from django.db import models
 from django.template import Context, Template
+from django.template import engines
+from django.template.utils import InvalidTemplateEngineError
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 
 class AbstractMailTemplate(models.Model):
+    html_template_file = "django_saas_email/email_base.html"
 
     name = models.CharField(
         _("Template name"),
@@ -70,6 +73,17 @@ class AbstractMailTemplate(models.Model):
     def __str__(self):
         return "%s" % self.name
 
+    @property
+    def backend(self):
+        try:
+            return self._backend
+        except AttributeError:
+            try:
+                self._backend = engines['email']
+            except InvalidTemplateEngineError:
+                self._backend = None
+            return self._backend
+
     @staticmethod
     def get_footer():
         """The used footer in the email."""
@@ -77,7 +91,7 @@ class AbstractMailTemplate(models.Model):
 
     def render_subject(self, context):
         """Take a list of values (inputs) and format the subject template, returning the subject."""
-        return Template(self.subject).render(context)
+        return Template(self.subject, engine=self.backend.engine).render(context)
 
     def render_with_context(self, context):
         """Return a dictionary containing two strings, the HTML and plaintext output.
@@ -87,7 +101,7 @@ class AbstractMailTemplate(models.Model):
         """
 
         # Rendering of EMAIL_CONTENT
-        email_content_html = Template(self.html_template).render(context)
+        email_content_html = Template(self.html_template, engine=self.backend.engine).render(context)
 
         # Context for HTML Template, including EMAIL_CONTENT
         html_context = {
@@ -96,12 +110,14 @@ class AbstractMailTemplate(models.Model):
             "EMAIL_FOOTER": self.get_footer(),
         }
 
-        html_output = render_to_string(
-            "django_saas_email/email_base.html", html_context
-        )
+        if self.backend:
+            template = self.backend.get_template(self.html_template_file)
+            html_output = template.render(html_context)
+        else:
+            html_output = render_to_string(self.html_template_file, html_context)
 
         if self.text_template:
-            text_output = Template(self.text_template).render(context)
+            text_output = Template(self.text_template, engine=self.backend.engine).render(context)
         else:
             text_output = self.html_to_text(email_content_html)
 
