@@ -34,6 +34,7 @@ TEMPLATES = [
     },
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
         "DIRS": ["django_saas_email/templates/"],
         "NAME": "email",
         "OPTIONS": {"string_if_invalid": "{%s}"},
