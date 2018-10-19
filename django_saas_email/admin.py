@@ -17,7 +17,7 @@ class AttachmentAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     ordering = ('-time_created',)
     search_fields = ('name', )
-    readonly_fields = ('time_created')
+    readonly_fields = ('time_created', )
 
 
 @admin.register(MailTemplate)
