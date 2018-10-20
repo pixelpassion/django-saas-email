@@ -433,7 +433,6 @@ class AbstractMail(models.Model):
                 attachments.append(
                     {
                         "content": content,
-                        "type": mimetypes.guess_type(attachment.attached_file.name),
                         "filename": attachment.attached_file.name,
                         "disposition": "attachment",
                     }
