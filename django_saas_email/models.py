@@ -419,9 +419,10 @@ class AbstractMail(models.Model):
 
             data = {
                 "personalizations": [
-                    {"to": [{"email": self.to_address}], "subject": rendered_subject}
+                    {"to": [{"email": self.to_address}]}
                 ],
                 "from": {"email": self.from_address},
+                "subject": rendered_subject,
                 "content": [{"type": "text/plain", "value": txt_content}],
             }
             attachments = []
