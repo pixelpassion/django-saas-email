@@ -60,7 +60,7 @@ class MailAdmin(admin.ModelAdmin):
         mails_sent = 0
 
         for mail in queryset:
-            send_asynchronous_mail(str(mail.id))
+            send_asynchronous_mail(str(mail.id), settings.USE_SENDGRID)
             mails_sent += 1
 
         if mails_sent == 1:
