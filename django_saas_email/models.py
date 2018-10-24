@@ -437,7 +437,8 @@ class AbstractMail(models.Model):
                         "disposition": "attachment",
                     }
                 )
-            data["attachments"] = attachments
+            if attachments:
+                data["attachments"] = attachments
 
             response = sg.client.mail.send.post(request_body=data)
             logger.debug(
