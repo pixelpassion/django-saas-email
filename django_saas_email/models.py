@@ -145,6 +145,9 @@ class AbstractAttachment(models.Model):
         verbose_name=_("Creation time"), default=timezone.now, editable=False
     )
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name = _("attachment")
         verbose_name_plural = _("attachments")
