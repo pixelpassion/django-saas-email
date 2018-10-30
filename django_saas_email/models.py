@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import base64
 import json
-import mimetypes
 import uuid
+import os
 
 import html2text
 import sendgrid
@@ -436,7 +436,7 @@ class AbstractMail(models.Model):
                 attachments.append(
                     {
                         "content": content,
-                        "filename": attachment.attached_file.name,
+                        "filename": os.path.basename(attachment.attached_file.name),
                         "disposition": "attachment",
                     }
                 )
