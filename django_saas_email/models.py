@@ -181,6 +181,7 @@ class MailManager(models.Manager):
         subject=None,
         selected_attachments=None,
         text=None,
+        cc_address=None,
     ):
         """Create a Mail object with proper validation.
 
@@ -240,6 +241,7 @@ class MailManager(models.Manager):
             context=context_json,
             from_address=from_address,
             to_address=to_address,
+            cc_address=cc_address,
             subject=subject,
             text=text,
         )
@@ -269,6 +271,13 @@ class AbstractMail(models.Model):
         help_text=_("The 'to' field of the email"),
         null=False,
         blank=False,
+    )
+
+    cc_address = models.EmailField(
+        _("CC email address"),
+        help_text=_("The 'cc' field of the email"),
+        null=True,
+        blank=True
     )
 
     # delivery_service (Sendgrid etc. - should be a CharField with Options)
@@ -419,11 +428,16 @@ class AbstractMail(models.Model):
                 raise ImproperlyConfigured("No SENDGRID_API_KEY set.")
 
             sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-
+            personalizations = []
+            personalizations.append({
+                "to": [{"email": self.to_address}]
+            })
+            if self.cc_address:
+                personalizations.append({
+                    "cc": [{"email": self.cc_address}]
+                })
             data = {
-                "personalizations": [
-                    {"to": [{"email": self.to_address}]}
-                ],
+                "personalizations": personalizations,
                 "from": {"email": self.from_address},
                 "subject": rendered_subject,
                 "content": [{"type": "text/plain", "value": txt_content}],
