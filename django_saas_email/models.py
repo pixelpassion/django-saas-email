@@ -182,6 +182,7 @@ class MailManager(models.Manager):
         selected_attachments=None,
         text=None,
         cc_address=None,
+        bcc_address=None,
     ):
         """Create a Mail object with proper validation.
 
@@ -242,6 +243,7 @@ class MailManager(models.Manager):
             from_address=from_address,
             to_address=to_address,
             cc_address=cc_address,
+            bcc_address=bcc_address,
             subject=subject,
             text=text,
         )
@@ -276,6 +278,13 @@ class AbstractMail(models.Model):
     cc_address = models.EmailField(
         _("CC email address"),
         help_text=_("The 'cc' field of the email"),
+        null=True,
+        blank=True
+    )
+
+    bcc_address = models.EmailField(
+        _("BCC email address"),
+        help_text=_("The 'bcc' field of the email"),
         null=True,
         blank=True
     )
@@ -435,6 +444,10 @@ class AbstractMail(models.Model):
             if self.cc_address:
                 personalizations.append({
                     "cc": [{"email": self.cc_address}]
+                })
+            if self.bcc_address:
+                personalizations.append({
+                    "bcc": [{"email": self.bcc_address}]
                 })
             data = {
                 "personalizations": personalizations,
