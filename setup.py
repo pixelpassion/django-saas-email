@@ -59,7 +59,7 @@ setup(
     install_requires=[
         "celery>=4.0",
         "html2text>=3.200.0",
-        "sendgrid>=3.0.0",
+        "sendgrid>=5.6.0",
         "django-tinymce>=2.7.0",
         "django-anymail>=0.9"
     ],

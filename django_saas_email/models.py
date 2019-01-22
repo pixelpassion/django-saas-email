@@ -3,9 +3,12 @@ import base64
 import json
 import uuid
 import os
+import urllib.error
 
 import html2text
 import sendgrid
+from sendgrid.helpers.mail import Email, Content, Mail as HelperMail, Attachment as HelperAttachment
+
 from django.conf import settings
 from tinymce import models as tinymce_models
 
@@ -437,40 +440,31 @@ class AbstractMail(models.Model):
                 raise ImproperlyConfigured("No SENDGRID_API_KEY set.")
 
             sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-            personalizations = []
-            personalizations.append({
-                "to": [{"email": self.to_address}]
-            })
+            from_email = Email(self.from_address)
+            to_email = Email(self.to_address)
+            content = Content("text/html", html_content)
+            mail = HelperMail(from_email, rendered_subject, to_email, content)
             if self.cc_address:
-                personalizations.append({
-                    "cc": [{"email": self.cc_address}]
-                })
+                mail.personalizations[0].add_cc(Email(self.cc_address))
             if self.bcc_address:
-                personalizations.append({
-                    "bcc": [{"email": self.bcc_address}]
-                })
-            data = {
-                "personalizations": personalizations,
-                "from": {"email": self.from_address},
-                "subject": rendered_subject,
-                "content": [{"type": "text/plain", "value": txt_content}],
-            }
-            attachments = []
+                mail.personalizations[0].add_bcc(Email(self.bcc_address))
+
             for attachment in self.selected_attachments.all():
-                content = base64.b64encode(attachment.attached_file.read()).decode(
+                ha = HelperAttachment()
+                ha.content = base64.b64encode(attachment.attached_file.read()).decode(
                     "ascii"
                 )
-                attachments.append(
-                    {
-                        "content": content,
-                        "filename": os.path.basename(attachment.attached_file.name),
-                        "disposition": "attachment",
-                    }
-                )
-            if attachments:
-                data["attachments"] = attachments
+                ha.filename = os.path.basename(attachment.attached_file.name)
+                ha.disposition = "attachment"
+                mail.add_attachment(ha)
 
-            response = sg.client.mail.send.post(request_body=data)
+            try:
+                response = sg.client.mail.send.post(request_body=mail.get())
+            except urllib.error.HTTPError as e:
+                print(e.read())
+                logger.warning("Error sending mail: {}".format(e.read()))
+                raise
+
             logger.debug(
                 "Email with UUID {} was sent with Sendgrid API.".format(self.id)
             )
@@ -483,7 +477,6 @@ class AbstractMail(models.Model):
             self.used_backend = "Sendgrid ({})".format(response.status_code)
 
         else:
-
             if html_content:
                 msg = EmailMultiAlternatives(
                     rendered_subject, txt_content, self.from_address, [self.to_address]
