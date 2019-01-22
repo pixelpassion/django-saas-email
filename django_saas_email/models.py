@@ -3,10 +3,10 @@ import base64
 import json
 import uuid
 import os
-import urllib.error
 
 import html2text
 import sendgrid
+from python_http_client import HTTPError
 from sendgrid.helpers.mail import Email, Content, Mail as HelperMail, Attachment as HelperAttachment
 
 from django.conf import settings
@@ -442,7 +442,7 @@ class AbstractMail(models.Model):
             sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
             from_email = Email(self.from_address)
             to_email = Email(self.to_address)
-            content = Content("text/html", html_content)
+            content = Content("text/plain", txt_content)
             mail = HelperMail(from_email, rendered_subject, to_email, content)
             if self.cc_address:
                 mail.personalizations[0].add_cc(Email(self.cc_address))
@@ -460,9 +460,8 @@ class AbstractMail(models.Model):
 
             try:
                 response = sg.client.mail.send.post(request_body=mail.get())
-            except urllib.error.HTTPError as e:
-                print(e.read())
-                logger.warning("Error sending mail: {}".format(e.read()))
+            except HTTPError as e:
+                logger.warning("Error sending mail: status_code={}, body={}".format(e.status_code, e.body))
                 raise
 
             logger.debug(
