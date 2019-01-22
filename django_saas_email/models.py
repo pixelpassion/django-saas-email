@@ -7,7 +7,12 @@ import os
 import html2text
 import sendgrid
 from python_http_client import HTTPError
-from sendgrid.helpers.mail import Email, Content, Mail as HelperMail, Attachment as HelperAttachment
+from sendgrid.helpers.mail import (
+    Email,
+    Content,
+    Mail as HelperMail,
+    Attachment as HelperAttachment,
+)
 
 from django.conf import settings
 from tinymce import models as tinymce_models
@@ -82,7 +87,7 @@ class AbstractMailTemplate(models.Model):
             return self._backend
         except AttributeError:
             try:
-                self._backend = engines['email']
+                self._backend = engines["email"]
             except InvalidTemplateEngineError:
                 self._backend = None
             return self._backend
@@ -104,7 +109,9 @@ class AbstractMailTemplate(models.Model):
         """
 
         # Rendering of EMAIL_CONTENT
-        email_content_html = Template(self.html_template, engine=self.backend.engine).render(context)
+        email_content_html = Template(
+            self.html_template, engine=self.backend.engine
+        ).render(context)
 
         # Context for HTML Template, including EMAIL_CONTENT
         html_context = {
@@ -120,7 +127,9 @@ class AbstractMailTemplate(models.Model):
             html_output = render_to_string(self.html_template_file, html_context)
 
         if self.text_template:
-            text_output = Template(self.text_template, engine=self.backend.engine).render(context)
+            text_output = Template(
+                self.text_template, engine=self.backend.engine
+            ).render(context)
         else:
             text_output = self.html_to_text(email_content_html)
 
@@ -282,14 +291,14 @@ class AbstractMail(models.Model):
         _("CC email address"),
         help_text=_("The 'cc' field of the email"),
         null=True,
-        blank=True
+        blank=True,
     )
 
     bcc_address = models.EmailField(
         _("BCC email address"),
         help_text=_("The 'bcc' field of the email"),
         null=True,
-        blank=True
+        blank=True,
     )
 
     # delivery_service (Sendgrid etc. - should be a CharField with Options)
@@ -444,9 +453,13 @@ class AbstractMail(models.Model):
             to_email = Email(self.to_address)
             content = Content("text/plain", txt_content)
             mail = HelperMail(from_email, rendered_subject, to_email, content)
-            if self.cc_address:
+            if self.cc_address and self.to_address != self.cc_address:
                 mail.personalizations[0].add_cc(Email(self.cc_address))
-            if self.bcc_address:
+            if (
+                self.bcc_address
+                and self.to_address != self.bcc_address
+                and (not self.cc_address or self.cc_address != self.bcc_address)
+            ):
                 mail.personalizations[0].add_bcc(Email(self.bcc_address))
 
             for attachment in self.selected_attachments.all():
@@ -461,7 +474,11 @@ class AbstractMail(models.Model):
             try:
                 response = sg.client.mail.send.post(request_body=mail.get())
             except HTTPError as e:
-                logger.warning("Error sending mail: status_code={}, body={}".format(e.status_code, e.body))
+                logger.warning(
+                    "Error sending mail: status_code={}, body={}".format(
+                        e.status_code, e.body
+                    )
+                )
                 raise
 
             logger.debug(
