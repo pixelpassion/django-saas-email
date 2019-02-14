@@ -8,7 +8,7 @@ decorator_kwargs = getattr(settings, "DJANGO_SAAS_EMAIL_DECORATOR_KWARGS", {})
 if task_queue == "celery":
     from celery import shared_task as task_decorator
 elif task_queue == "rq":
-    from rq import job as task_decorator
+    from django_rq import job as task_decorator
 else:
     raise RuntimeError("Only `celery` and `rq` task queues are supported.")
 

@@ -58,6 +58,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "celery>=4.0",
+        "django_rq==1.3.0",
         "html2text>=3.200.0",
         "sendgrid>=5.6.0",
         "django-tinymce>=2.7.0",
