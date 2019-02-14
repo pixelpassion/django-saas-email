@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
@@ -52,7 +53,11 @@ class MailTemplateAdmin(admin.ModelAdmin):
     inlines = [TemplateAttachmentInline, ]
 
 
-@admin.register(Mail)
+model_class_name = getattr(settings, "DJANGO_SAAS_EMAIL_MAIL_MODEL", "django_saas_email.mail")
+model_class = apps.get_model(*model_class_name.split())
+
+
+@admin.register(model_class)
 class MailAdmin(admin.ModelAdmin):
 
     def send_mail_now(self, request, queryset):
