@@ -48,6 +48,23 @@ Add it to your `INSTALLED_APPS`:
     )
 
 
+Add a template engine `TEMPLATES`:
+
+.. code-block:: python
+
+   TEMPLATES = [
+       ...
+       {
+           "BACKEND": "django.template.backends.django.DjangoTemplates",
+           "APP_DIRS": True,
+           "DIRS": ["django_saas_email/templates/"],
+           "NAME": "email",
+           "OPTIONS": {"string_if_invalid": "{%s}"},
+       }
+   ]
+
+
+
 **JSONField**
 
 We are using the Postgres JSONField as default. If you installed `psycopg2`, everything should work fine.
@@ -68,26 +85,68 @@ Other optional settings::
     DJANGO_SAAS_TEST_EMAIL_ADDRESS=youremailfortesting@example.org
     DJANGO_SAAS_FOOTER="""Follow <a href="#" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">@yourcompany</a> on Twitter"""
 
+
 **Sending emails**
 
-Basic example::
+.. code-block:: python
 
-    from django_saas_email.utils import create_and_send_emails
+   from django_saas_email.utils import create_and_send_mail
 
-    context={
-        'first_name': 'John',
-        'last_name': 'Doe',
-    }
+   context={
+     'first_name': 'John',
+     'last_name': 'Doe',
+   }
 
-    create_and_send_mail(
-        template_name="hello_world",
-        context=context,
-        to_address=john.doe@example.org
-    )
+   create_and_send_mail(
+     template_name="hello_world",
+     context=context,
+     to_address="john.doe@example.org"
+   )
 
 This will create an email and send it with Sengrid.
 
 You should use http://premailer.dialect.ca or django-premailer to create Inline CSS in HTML
+
+
+**Background sending**
+
+This module sends emails asynchronously. To do that, it uses `celery`.
+You will need to run and configure `celery` to really send emails using the
+library.
+
+The best source to do that is `First Steps with Celery <http://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html>`_.
+
+But you may use the following simple guide if you want to make it fast:
+
+
+1. Create a `celery.py` file aside your `wsgi.py` file with the following content:
+
+.. code-block:: python
+
+   from __future__ import absolute_import, unicode_literals
+   import os
+   from celery import Celery
+
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+   app = Celery(<YOUR_APP_NAME>)
+   app.config_from_object('django.conf:settings', namespace='CELERY')
+   app.autodiscover_tasks()
+
+Change `<YOUR_APP_NAME>` to the name of your app.
+
+
+2. Install `RabbitMQ <https://www.rabbitmq.com/download.html>`_.
+
+3. Run `celery`:
+
+.. code-block:: bash
+
+   celery -A <YOUR_APP_NAME> worker -B -l debug
+
+Change `<YOUR_APP_NAME>` to the name of your app.
+
+4. Now you might just send the email with no problem using `create_and_send_mail` function.
 
 
 Running Tests
