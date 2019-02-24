@@ -189,7 +189,9 @@ class MailManager(models.Manager):
         template_name=None,
         context=None,
         to_address=None,
+        to_name=None,
         from_address=None,
+        from_name=None,
         subject=None,
         selected_attachments=None,
         text=None,
@@ -253,7 +255,9 @@ class MailManager(models.Manager):
             template=template,
             context=context_json,
             from_address=from_address,
+            from_name=from_name,
             to_address=to_address,
+            to_name=to_name,
             cc_address=cc_address,
             bcc_address=bcc_address,
             subject=subject,
@@ -280,11 +284,27 @@ class AbstractMail(models.Model):
         blank=False,
     )
 
+    from_name = models.CharField(
+        max_length=100,
+        verbose_name=("Sender name"),
+        help_text=_("Email sender name"),
+        null=True,
+        blank=True,
+    )
+
     to_address = models.EmailField(
         _("Recipient email address"),
         help_text=_("The 'to' field of the email"),
         null=False,
         blank=False,
+    )
+
+    to_name = models.CharField(
+        max_length=100,
+        verbose_name=_("Recipient name"),
+        help_text=_("Email recipient name"),
+        null=True,
+        blank=True,
     )
 
     cc_address = models.EmailField(
@@ -449,8 +469,8 @@ class AbstractMail(models.Model):
                 raise ImproperlyConfigured("No SENDGRID_API_KEY set.")
 
             sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-            from_email = Email(self.from_address)
-            to_email = Email(self.to_address)
+            from_email = Email(self.from_address, self.from_name)
+            to_email = Email(self.to_address, self.to_name)
             content = Content("text/plain", txt_content)
             mail = HelperMail(from_email, rendered_subject, to_email, content)
             if self.cc_address and self.to_address != self.cc_address:
