@@ -75,6 +75,12 @@ class AbstractMailTemplate(models.Model):
         "Attachment", through="TemplateAttachment", blank=True
     )
 
+    sender_email = models.EmailField(
+        null=True,
+        blank=True,
+        help_text=_("Email to use as sender address when the template is used. If not set then default address is used")
+    )
+
     class Meta:
         abstract = True
 
@@ -239,7 +245,10 @@ class MailManager(models.Manager):
             context_json = None
 
         if from_address is None:
-            from_address = settings.DEFAULT_FROM_EMAIL
+            if template.sender_email:
+                from_address = template.sender_email
+            else:
+                from_address = settings.DEFAULT_FROM_EMAIL
 
         try:
             validate_email(from_address)
