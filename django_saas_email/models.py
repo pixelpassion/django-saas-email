@@ -5,6 +5,7 @@ import uuid
 import os
 
 import html2text
+import html2text.config
 import sendgrid
 from python_http_client import HTTPError
 from sendgrid.helpers.mail import (
@@ -34,6 +35,9 @@ from django.template.utils import InvalidTemplateEngineError
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+
+
+html2text.config.UNICODE_SNOB = 1  # Global config setting to keep umlauts
 
 
 class AbstractMailTemplate(models.Model):
@@ -482,6 +486,8 @@ class AbstractMail(models.Model):
             to_email = Email(self.to_address, self.to_name)
             content = Content("text/plain", txt_content)
             mail = HelperMail(from_email, rendered_subject, to_email, content)
+            if html_content:
+                mail.add_content(Content('text/html', html_content))
             if self.cc_address and self.to_address != self.cc_address:
                 mail.personalizations[0].add_cc(Email(self.cc_address))
             if (
