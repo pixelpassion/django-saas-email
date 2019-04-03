@@ -37,7 +37,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 
-html2text.config.UNICODE_SNOB = 1  # Global config setting to keep umlauts
+html2text.config.BODY_WIDTH = 0  # Do not insert newlines when converting text
 
 
 class AbstractMailTemplate(models.Model):
