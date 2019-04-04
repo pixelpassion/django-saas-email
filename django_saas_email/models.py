@@ -483,20 +483,20 @@ class AbstractMail(models.Model):
 
             sg = sendgrid.SendGridAPIClient(settings.SENDGRID_API_KEY)
             from_email = Email(self.from_address, self.from_name)
-            to_email = Email(self.to_address, self.to_name)
             content = Content("text/plain", txt_content)
-            init_kwargs = {'from_email': from_email, 'to_emails': [to_email], 'subject': rendered_subject,
+            init_kwargs = {'from_email': from_email, 'subject': rendered_subject,
                            'plain_text_content': content}
-            mail = HelperMail(**init_kwargs)
+            to_emails = [sendgrid.To(self.to_address, self.to_name)]
             if self.cc_address and self.to_address != self.cc_address:
-                mail.personalizations[0].add_cc(Email(self.cc_address))
+                to_emails.append(sendgrid.Cc(self.cc_address))
             if (
                 self.bcc_address
                 and self.to_address != self.bcc_address
                 and (not self.cc_address or self.cc_address != self.bcc_address)
             ):
-                mail.personalizations[0].add_bcc(Email(self.bcc_address))
-
+                to_emails.append(sendgrid.Bcc(self.bcc_address))
+            init_kwargs['to_emails'] = to_emails
+            mail = HelperMail(**init_kwargs)
             for attachment in self.selected_attachments.all():
                 ha = HelperAttachment()
                 ha.content = base64.b64encode(attachment.attached_file.read()).decode(
