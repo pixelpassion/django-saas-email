@@ -58,11 +58,11 @@ setup(
     include_package_data=True,
     install_requires=[
         "celery>=4.0",
-        "django_rq==1.3.0",
-        "html2text>=2018.1.9",
-        "sendgrid>=5.6.0",
-        "django-tinymce>=2.7.0",
-        "django-anymail>=0.9"
+        "django_rq==1.3.1",
+        "html2text==2018.1.9",
+        "sendgrid==6.0.2",
+        "django-tinymce==2.7.0",
+        "django-anymail==0.9"
     ],
     license="MIT",
     zip_safe=False,
