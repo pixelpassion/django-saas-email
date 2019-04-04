@@ -481,7 +481,7 @@ class AbstractMail(models.Model):
             if not settings.SENDGRID_API_KEY:
                 raise ImproperlyConfigured("No SENDGRID_API_KEY set.")
 
-            sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+            sg = sendgrid.SendGridAPIClient(settings.SENDGRID_API_KEY)
             from_email = Email(self.from_address, self.from_name)
             to_email = Email(self.to_address, self.to_name)
             content = Content("text/plain", txt_content)
