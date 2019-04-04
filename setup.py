@@ -62,7 +62,7 @@ setup(
         "html2text==2018.1.9",
         "sendgrid==6.0.2",
         "django-tinymce==2.7.0",
-        "django-anymail==0.9"
+        "django-anymail==6.0"
     ],
     license="MIT",
     zip_safe=False,
