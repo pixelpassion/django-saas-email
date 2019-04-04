@@ -485,9 +485,9 @@ class AbstractMail(models.Model):
             from_email = Email(self.from_address, self.from_name)
             to_email = Email(self.to_address, self.to_name)
             content = Content("text/plain", txt_content)
-            mail = HelperMail(from_email, rendered_subject, to_email, content)
-            if html_content:
-                mail.add_content(Content('text/html', html_content))
+            init_kwargs = {'from_email': from_email, 'to_emails': [to_email], 'subject': rendered_subject,
+                           'plain_text_content': content}
+            mail = HelperMail(**init_kwargs)
             if self.cc_address and self.to_address != self.cc_address:
                 mail.personalizations[0].add_cc(Email(self.cc_address))
             if (
@@ -507,7 +507,7 @@ class AbstractMail(models.Model):
                 mail.add_attachment(ha)
 
             try:
-                response = sg.client.mail.send.post(request_body=mail.get())
+                response = sg.send(mail)
             except HTTPError as e:
                 logger.warning(
                     "Error sending mail: status_code={}, body={}".format(
