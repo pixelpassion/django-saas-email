@@ -38,8 +38,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 
-html2text.config.BODY_WIDTH = 0  # Do not insert newlines when converting text
-
+html2text.config.UNICODE_SNOB = 1  # Do not convert umlauts to umlautless characters
 
 class AbstractMailTemplate(models.Model):
     html_template_file = "django_saas_email/email_base.html"
@@ -153,7 +152,7 @@ class AbstractMailTemplate(models.Model):
         If no text_template exists, make_output() will use this method to generate the text-only output.
         This method should not be called externally.
         """
-        h = html2text.HTML2Text()
+        h = html2text.HTML2Text(bodywidth=0)
         return h.handle(html_string)
 
 
