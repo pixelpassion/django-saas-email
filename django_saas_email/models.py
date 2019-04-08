@@ -106,7 +106,7 @@ class AbstractMailTemplate(models.Model):
         If the text_template field is empty, it will dynamically generate the text version from the HTML output.
         """
         if plain_text_context is None:
-            plain_text_context = {k: mark_safe(v) for k, v in context.flatten()}
+            plain_text_context = Context({k: mark_safe(v) for k, v in context.flatten()})
         # Rendering of EMAIL_CONTENT
         email_content_html = Template(self.html_template, engine=self.backend.engine).render(context)
 
