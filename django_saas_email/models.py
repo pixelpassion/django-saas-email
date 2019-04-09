@@ -106,7 +106,7 @@ class AbstractMailTemplate(models.Model):
         If the text_template field is empty, it will dynamically generate the text version from the HTML output.
         """
         if plain_text_context is None:
-            plain_text_context = Context({k: mark_safe(v) for k, v in context.flatten()})
+            plain_text_context = Context({k: mark_safe(v) for k, v in context.flatten().items()})
         # Rendering of EMAIL_CONTENT
         email_content_html = Template(self.html_template, engine=self.backend.engine).render(context)
 
@@ -432,10 +432,11 @@ class AbstractMail(models.Model):
             init_kwargs["to_emails"] = to_emails
             mail = HelperMail(**init_kwargs)
             for attachment in self.selected_attachments.all():
-                ha = HelperAttachment()
-                ha.content = base64.b64encode(attachment.attached_file.read()).decode("ascii")
-                ha.filename = os.path.basename(attachment.attached_file.name)
-                ha.disposition = "attachment"
+                ha = HelperAttachment(
+                    file_content=base64.b64encode(attachment.attached_file.read()).decode("ascii"),
+                    file_name=os.path.basename(attachment.attached_file.name),
+                    disposition="attachment"
+                )
                 mail.add_attachment(ha)
 
             try:
