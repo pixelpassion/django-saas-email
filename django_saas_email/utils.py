@@ -12,3 +12,7 @@ def create_and_send_mail(**kwargs):
     send_asynchronous_mail.delay(
         mail.id, sendgrid_api=getattr(settings, "SENDGRID_API_KEY", False)
     )
+
+
+def _noautoescape(template):
+    return "{}{}{}".format("{% autoescape off %}", template, "{% endautoescape %}")
