@@ -4,6 +4,6 @@ celery==4.1
 html2text==2016.9.19
 sendgrid==4.1.0
 django-tinymce==2.7.0
-django-anymail==0.9
+django-anymail==1.2.1
 jsonfield==2.0.2
 django-override-storage==0.1.6
