@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
@@ -52,7 +53,11 @@ class MailTemplateAdmin(admin.ModelAdmin):
     inlines = [TemplateAttachmentInline, ]
 
 
-@admin.register(Mail)
+model_class_name = getattr(settings, "DJANGO_SAAS_EMAIL_MAIL_MODEL", "django_saas_email.mail")
+model_class = apps.get_model(*model_class_name.split())
+
+
+@admin.register(model_class)
 class MailAdmin(admin.ModelAdmin):
 
     def send_mail_now(self, request, queryset):
@@ -71,8 +76,8 @@ class MailAdmin(admin.ModelAdmin):
 
     send_mail_now.short_description = "Send mail now"
 
-    list_display = ('id', 'time_created', 'from_address', 'to_address', 'template', 'subject', 'context',)
-    search_fields = ['from_address', 'to_address', 'subject', 'context', ]
+    list_display = ('id', 'time_created', 'from_address', 'to_address', 'cc_address', 'template', 'subject', 'context',)
+    search_fields = ['from_address', 'to_address', 'cc_address', 'subject', 'context', ]
     ordering = ('-time_created',)
     list_filter = ('time_created', 'template')
 
