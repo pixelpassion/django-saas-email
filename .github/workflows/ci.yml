@@ -20,6 +20,8 @@ jobs:
         pip install -r requirements_dev.txt
 
     - name: run linters via pre-commit
+      env:
+        SKIP: no-commit-to-branch
       run: pre-commit run --all
 
   build:
