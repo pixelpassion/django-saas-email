@@ -8,21 +8,19 @@ test_django-saas-email
 Tests for `django-saas-email` models module.
 """
 import base64
-import tempfile
 import pathlib
+import tempfile
+
 import mock
-
 from django.conf import settings
-from django.test import TestCase, override_settings
-
-from django_saas_email.models import Mail, MailTemplate, Attachment, TemplateAttachment
-
-from django.template import Context
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ValidationError
-
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.template import Context
+from django.test import TestCase, override_settings
 from override_storage import override_storage
 from python_http_client import Client
+
+from django_saas_email.models import Attachment, Mail, MailTemplate, TemplateAttachment
 
 
 class CreateMailTest(TestCase):
@@ -57,12 +55,15 @@ class CreateMailTest(TestCase):
             template if template else self.valid_template,
             context if context else self.valid_context,
             to_address if to_address else self.valid_to_address,
-            from_address if from_address is not "Default" else self.valid_from_address,
-            subject if subject is not "Default" else self.valid_subject,
+            from_address if from_address != "Default" else self.valid_from_address,
+            subject if subject != "Default" else self.valid_subject,
         )
 
     def test_create_mail_with_required_fields_only(self):
-        """Call Mail.objects.create_mail with valid required arguments should succeed."""
+        """
+        Call Mail.objects.create_mail with valid required arguments
+        should succeed.
+        """
 
         mail_with_required_fields_only = self.create_mail(
             from_address=None, subject=None
@@ -165,19 +166,6 @@ class SendMailTest(TestCase):
         """
         self.mail.send()
 
-    # def test_send_mail_sendgrid(self):
-    #     """Call mail.send() using sendgrid API
-    #
-    #     Make sure mail is actually sent.
-    #
-    #     This should be mocked later, right now its checking for a 401 HttpError sent by CircleCI
-    #     because the SENDGRID_API_KEY is wrong in circle.yml
-    #
-    #     urllib.error.HTTPError: HTTP Error 401: Unauthorized
-    #     """
-    #     with self.assertRaises(HTTPError):
-    #         self.mail.send(sendgrid_api=True)
-
     def tearDown(self):
         self.mail = None
 
@@ -222,8 +210,7 @@ class SendMailInfoTest(TestCase):
         self.mail.send()
 
     def test_mail_with_text(self):
-
-        template = MailTemplate.objects.get(name="test_template")
+        MailTemplate.objects.get(name="test_template")
         self.mail = Mail.objects.create_mail(
             None,
             {"name": "Max"},
@@ -405,7 +392,10 @@ class MailTemplateTest(TestCase):
         )
 
     def test_make_output(self):
-        """Check that the correct html and text output is produced when both templates are provided."""
+        """
+        Check that the correct html and text output is produced when both
+        templates are provided.
+        """
         self.mail_template.text_template = "Hello, {{ name }}!"
         self.mail_template.save()
 
@@ -419,14 +409,25 @@ class MailTemplateTest(TestCase):
 
     def test_html_to_text(self):
         """Check that html_to_text() produces correct output."""
-        test_html = "<p><strong>Bold test</strong> and <em>Italics test</p>\n<p>And finally a <a href='https://www.example.com/'>Link test</a>"
-        test_expected_output = "**Bold test** and _Italics test\n\nAnd finally a [Link test](https://www.example.com/)\n\n"
+        test_html = """
+        <p><strong>Bold test</strong> and
+        <em>Italics test</p>\n
+        <p>And finally a <a href='https://www.example.com/'>Link test</a>
+        """
+        test_expected_output = (
+            "**Bold test** and "
+            "_Italics test\n\n"
+            "And finally a [Link test](https://www.example.com/)\n\n"
+        )
         self.assertInHTML(
             test_expected_output, self.mail_template.html_to_text(test_html)
         )
 
     def test_make_output_html_only(self):
-        """Check that the correct html and text output is produced when only html template is provided."""
+        """
+        Check that the correct html and text output is produced when
+        only html template is provided.
+        """
         self.assertInHTML(
             "<p><b>Hello</b>, Max!</p>",
             self.mail_template.render_with_context(self.context)["html"],

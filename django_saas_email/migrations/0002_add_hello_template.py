@@ -44,9 +44,15 @@ def forwards_func(apps, schema_editor):
 </table>
     """
 
-    MailTemplate.objects.using(db_alias).bulk_create([
-        MailTemplate(name="hello", html_template=html_template, subject="Hello {{first_name}} {{last_name}}!"),
-    ])
+    MailTemplate.objects.using(db_alias).bulk_create(
+        [
+            MailTemplate(
+                name="hello",
+                html_template=html_template,
+                subject="Hello {{first_name}} {{last_name}}!",
+            ),
+        ]
+    )
 
 
 def reverse_func(apps, schema_editor):
@@ -60,7 +66,7 @@ def reverse_func(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('django_saas_email', '0001_initial'),
+        ("django_saas_email", "0001_initial"),
     ]
     operations = [
         migrations.RunPython(forwards_func, reverse_func),

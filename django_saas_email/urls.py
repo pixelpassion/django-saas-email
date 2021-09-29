@@ -3,107 +3,107 @@ from django.conf.urls import url
 
 from . import views
 
-app_name = 'django_saas_email'
+app_name = "django_saas_email"
 
 urlpatterns = [
     url(
-        regex="^Mail/~create/$",
+        regex=r"^Mail/~create/$",
         view=views.MailCreateView.as_view(),
-        name='Mail_create',
+        name="Mail_create",
     ),
     url(
-        regex="^Mail/(?P<pk>\d+)/~delete/$",
+        regex=r"^Mail/(?P<pk>\d+)/~delete/$",
         view=views.MailDeleteView.as_view(),
-        name='Mail_delete',
+        name="Mail_delete",
     ),
     url(
-        regex="^Mail/(?P<pk>\d+)/$",
+        regex=r"^Mail/(?P<pk>\d+)/$",
         view=views.MailDetailView.as_view(),
-        name='Mail_detail',
+        name="Mail_detail",
     ),
     url(
-        regex="^Mail/(?P<pk>\d+)/~update/$",
+        regex=r"^Mail/(?P<pk>\d+)/~update/$",
         view=views.MailUpdateView.as_view(),
-        name='Mail_update',
+        name="Mail_update",
     ),
     url(
-        regex="^Mail/$",
+        regex=r"^Mail/$",
         view=views.MailListView.as_view(),
-        name='Mail_list',
+        name="Mail_list",
     ),
     url(
-        regex="^MailTemplate/~create/$",
+        regex=r"^MailTemplate/~create/$",
         view=views.MailTemplateCreateView.as_view(),
-        name='MailTemplate_create',
+        name="MailTemplate_create",
     ),
     url(
-        regex="^MailTemplate/(?P<pk>\d+)/~delete/$",
+        regex=r"^MailTemplate/(?P<pk>\d+)/~delete/$",
         view=views.MailTemplateDeleteView.as_view(),
-        name='MailTemplate_delete',
+        name="MailTemplate_delete",
     ),
     url(
-        regex="^MailTemplate/(?P<pk>\d+)/$",
+        regex=r"^MailTemplate/(?P<pk>\d+)/$",
         view=views.MailTemplateDetailView.as_view(),
-        name='MailTemplate_detail',
+        name="MailTemplate_detail",
     ),
     url(
-        regex="^MailTemplate/(?P<pk>\d+)/~update/$",
+        regex=r"^MailTemplate/(?P<pk>\d+)/~update/$",
         view=views.MailTemplateUpdateView.as_view(),
-        name='MailTemplate_update',
+        name="MailTemplate_update",
     ),
     url(
-        regex="^MailTemplate/$",
+        regex=r"^MailTemplate/$",
         view=views.MailTemplateListView.as_view(),
-        name='MailTemplate_list',
+        name="MailTemplate_list",
     ),
     url(
-        regex="^Attachment/~create/$",
+        regex=r"^Attachment/~create/$",
         view=views.AttachmentCreateView.as_view(),
-        name='Attachment_create',
+        name="Attachment_create",
     ),
     url(
-        regex="^Attachment/(?P<pk>\d+)/~delete/$",
+        regex=r"^Attachment/(?P<pk>\d+)/~delete/$",
         view=views.AttachmentDeleteView.as_view(),
-        name='Attachment_delete',
+        name="Attachment_delete",
     ),
     url(
-        regex="^Attachment/(?P<pk>\d+)/$",
+        regex=r"^Attachment/(?P<pk>\d+)/$",
         view=views.AttachmentDetailView.as_view(),
-        name='Attachment_detail',
+        name="Attachment_detail",
     ),
     url(
-        regex="^Attachment/(?P<pk>\d+)/~update/$",
+        regex=r"^Attachment/(?P<pk>\d+)/~update/$",
         view=views.AttachmentUpdateView.as_view(),
-        name='Attachment_update',
+        name="Attachment_update",
     ),
     url(
-        regex="^Attachment/$",
+        regex=r"^Attachment/$",
         view=views.AttachmentListView.as_view(),
-        name='Attachment_list',
+        name="Attachment_list",
     ),
     url(
-        regex="^TemplateAttachment/~create/$",
+        regex=r"^TemplateAttachment/~create/$",
         view=views.TemplateAttachmentCreateView.as_view(),
-        name='TemplateAttachment_create',
+        name="TemplateAttachment_create",
     ),
     url(
-        regex="^TemplateAttachment/(?P<pk>\d+)/~delete/$",
+        regex=r"^TemplateAttachment/(?P<pk>\d+)/~delete/$",
         view=views.TemplateAttachmentDeleteView.as_view(),
-        name='TemplateAttachment_delete',
+        name="TemplateAttachment_delete",
     ),
     url(
-        regex="^TemplateAttachment/(?P<pk>\d+)/$",
+        regex=r"^TemplateAttachment/(?P<pk>\d+)/$",
         view=views.TemplateAttachmentDetailView.as_view(),
-        name='TemplateAttachment_detail',
+        name="TemplateAttachment_detail",
     ),
     url(
-        regex="^TemplateAttachment/(?P<pk>\d+)/~update/$",
+        regex=r"^TemplateAttachment/(?P<pk>\d+)/~update/$",
         view=views.TemplateAttachmentUpdateView.as_view(),
-        name='TemplateAttachment_update',
+        name="TemplateAttachment_update",
     ),
     url(
-        regex="^TemplateAttachment/$",
+        regex=r"^TemplateAttachment/$",
         view=views.TemplateAttachmentListView.as_view(),
-        name='TemplateAttachment_list',
+        name="TemplateAttachment_list",
     ),
 ]
