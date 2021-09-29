@@ -3,11 +3,11 @@ from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
+    ListView,
     UpdateView,
-    ListView
 )
 
-from .models import Mail, MailTemplate, Attachment, TemplateAttachment
+from .models import Attachment, Mail, MailTemplate, TemplateAttachment
 
 
 class MailCreateView(CreateView):

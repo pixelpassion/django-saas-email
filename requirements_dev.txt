@@ -7,3 +7,4 @@ django-tinymce==2.7.0
 django-anymail==1.2.1
 jsonfield==2.0.2
 django-override-storage==0.1.6
+pre-commit>=2.15.0

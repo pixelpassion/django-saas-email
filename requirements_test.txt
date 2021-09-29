@@ -10,5 +10,6 @@ django-anymail==1.2.1
 jsonfield==2.0.2
 django-override-storage==0.3.0
 psycopg2-binary==2.8.6
+pre-commit>=2.15.0
 
 # Additional test requirements go here
