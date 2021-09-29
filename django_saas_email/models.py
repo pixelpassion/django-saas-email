@@ -163,6 +163,8 @@ class AbstractAttachment(models.Model):
 
 
 class Attachment(AbstractAttachment):
+    """Global attachments that can be added to Templates."""
+
     pass
 
 
@@ -492,3 +494,9 @@ class AbstractMail(models.Model):
 
 class Mail(AbstractMail):
     pass
+
+
+class UniqueAttachment(AbstractAttachment):
+    """Unique, additional attachment that is created for a single email."""
+
+    mail = models.ForeignKey(Mail)
