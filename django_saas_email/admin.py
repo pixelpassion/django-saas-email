@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .models import Attachment, Mail, MailTemplate, TemplateAttachment
 from .tasks import send_asynchronous_mail

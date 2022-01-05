@@ -23,7 +23,7 @@ from django.template import Context, Template, engines
 from django.template.loader import render_to_string
 from django.template.utils import InvalidTemplateEngineError
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 class AbstractMailTemplate(models.Model):

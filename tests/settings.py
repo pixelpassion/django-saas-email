@@ -36,6 +36,8 @@ if django.VERSION >= (1, 10):
 else:
     MIDDLEWARE_CLASSES = ()
 
+STATIC_URL = "static/"
+
 USE_SENDGRID = False
 TEMPLATES = [
     {
