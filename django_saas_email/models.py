@@ -6,24 +6,19 @@ import uuid
 import html2text
 import sendgrid
 from django.conf import settings
-from tinymce import models as tinymce_models
-
-from .logger import logger
-
-try:
-    from django.contrib.postgres.fields import JSONField
-except ImportError:
-    from jsonfield import JSONField
-
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.core.validators import validate_email
 from django.db import models
+from django.db.models import JSONField
 from django.template import Context, Template, engines
 from django.template.loader import render_to_string
 from django.template.utils import InvalidTemplateEngineError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from tinymce import models as tinymce_models
+
+from .logger import logger
 
 
 class AbstractMailTemplate(models.Model):
