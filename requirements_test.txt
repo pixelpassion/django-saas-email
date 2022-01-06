@@ -1,7 +1,7 @@
 coverage==4.3.4
 mock>=1.0.1
 flake8>=2.1.0
-celery==4.1
+celery==5.2.2
 codecov>=2.0.0
 html2text==2016.9.19
 sendgrid==4.1.0
